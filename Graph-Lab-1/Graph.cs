@@ -27,7 +27,7 @@ namespace GraphLab
                         int j = 0;
                         SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
                         if (line == string.Empty) continue;
-                        foreach (var number in line.Trim(' ').Split(' '))
+                        foreach (var number in line.Trim('\r',' ').Split(' '))
                         {
                             int weight = Int32.Parse(number);
                             if (weight != 0) adjacentVerticeSet.Add(new AdjacentVertex(j,weight));
@@ -103,6 +103,25 @@ namespace GraphLab
                     matrix[i][element.Vj] = element.Weight;
                 }
                 i++;
+            }
+            return matrix;
+        }
+        public int[][] GetAdjacencyMatrixForWarshall()
+        {
+            int[][] matrix = new int[_adjacentList.Length][];
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                matrix[i] = new int[_adjacentList.Length];
+                for (int j = 0; j < _adjacentList.Length; j++)
+                {
+                    if (i == j) matrix[i][j] = 0;
+                    else
+                    {
+                        AdjacentVertex vertex = _adjacentList[i].FirstOrDefault(v => v.Vj == j,new AdjacentVertex(j,int.MaxValue));
+                        matrix[i][j] = vertex.Weight;
+                    }
+                    
+                }
             }
             return matrix;
         }
