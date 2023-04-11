@@ -40,7 +40,7 @@ namespace GraphLab
                 }
             }
 
-            if(fileType == InputFileType.EdgesList)
+            else if(fileType == InputFileType.EdgesList)
             {
                 using (StreamReader reader = new StreamReader(filePath))
                 {
@@ -64,7 +64,7 @@ namespace GraphLab
                 }
             }
 
-            if(fileType == InputFileType.AdjacencyList)
+            else if(fileType == InputFileType.AdjacencyList)
             {
                 using(StreamReader reader = new StreamReader(filePath))
                 {
