@@ -1,17 +1,10 @@
 ﻿using GraphLab.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace GraphLab
 {
     internal class Graph
     {
         private readonly SortedSet<AdjacentVertex>[] _adjacentList; 
+        public bool IsDirected { get; }
         public Graph(string filePath, InputFileType fileType)
         {
             
@@ -85,7 +78,7 @@ namespace GraphLab
                     _adjacentList = adjacentList.ToArray();
                 }
             }
-            
+            IsDirected = CheckDirected();           
         }
         /// <summary>
         /// Return the adjacency matrix of the Graph
@@ -106,7 +99,11 @@ namespace GraphLab
             }
             return matrix;
         }
-        public int[][] GetAdjacencyMatrixForWarshall()
+        /// <summary>
+        /// Return the adjacency matrix of the Graph
+        /// </summary>
+        /// <returns>Return the adjacency matrix, where is there no path, int.MaxValue is used</returns>
+        private int[][] GetAdjacencyMatrixForWarshall()
         {
             int[][] matrix = new int[_adjacentList.Length][];
             for (int i = 0; i < _adjacentList.Length; i++)
@@ -183,23 +180,112 @@ namespace GraphLab
             return listOfEdges.ToArray();
         } 
         /// <returns>True if Graph is directed</returns>
-        public bool IsDirected()
+        private bool CheckDirected()
         {
-            bool directed = true;
+            bool directed = false;
             for (int i = 0; i < _adjacentList.Length; i++)
             {
                 foreach(var adjacentVertex in _adjacentList[i])
                 {
                     if (adjacentVertex.Weight != _adjacentList[adjacentVertex.Vj].FirstOrDefault(vertex => vertex.Vj == i, new AdjacentVertex(0, 0)).Weight)
                     {
-                        directed = false; 
+                        directed = true; 
                         break;
                     };
+                    if (directed) break;
                 }
             }
             return directed;
         }
+        
+        public int[][] FloydWarshallAlgorithm()
+        {
+            int[][] MatrixD = GetAdjacencyMatrixForWarshall();
+            for (int k = 0; k < _adjacentList.Length; k++)
+            {
+                for (int i = 0; i < _adjacentList.Length; i++)
+                {
+                    for (int j = 0; j < _adjacentList.Length; j++)
+                    {
+                        if (MatrixD[i][k] == int.MaxValue || MatrixD[k][j] == int.MaxValue) continue;
+                        MatrixD[i][j] = Math.Min(MatrixD[i][j], MatrixD[i][k] + MatrixD[k][j]);
+                    }
+                }
+            }
+            return MatrixD;
+        }
 
+        public DegreeVector GetDegreeVector()
+        {
+            DegreeVector degreeVector = new DegreeVector(IsDirected,_adjacentList.Length);
+
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                degreeVector.SetOutgoingVectorDegree(i, _adjacentList[i].Count);
+            }
+            if (IsDirected)
+            {
+                for (int i = 0; i < _adjacentList.Length; i++)
+                {
+                    foreach (var outgoingVertex in _adjacentList[i])
+                    {
+                        degreeVector.GetIncomingVector()[outgoingVertex.Vj]++;
+                    }
+                }
+            }
+          
+            return degreeVector;
+        }
+        public int[] GetEccentricity()//??? Только связный граф?
+        {
+            int[][] floydWarshallMatrix = FloydWarshallAlgorithm();
+            int[] eccentricity = new int[floydWarshallMatrix.Length];
+            for (int i = 0; i < floydWarshallMatrix.Length; i++)
+            {
+                eccentricity[i] = floydWarshallMatrix[i].Max();
+            }
+            return eccentricity;
+        }
+        static public int[] GetEccentricity(int[][] FloydWarshallMatrix)
+        {
+            int[] eccentricity = new int[FloydWarshallMatrix.Length];
+            for (int i = 0; i < FloydWarshallMatrix.Length; i++)
+            {
+                eccentricity[i] = FloydWarshallMatrix[i].Max();
+            }
+            return eccentricity;
+        }
+        
+        public int GetRadius()
+        {
+            return GetEccentricity().Min();
+        }        
+        public int GetDiameter()
+        {
+            return GetEccentricity().Max();
+        }
+        public int[] GetCentralVertices()
+        {
+            int[] eccentricity = GetEccentricity();
+            int radius = eccentricity.Min();
+            List<int> centralVertices = new List<int>();
+            for (int i = 0; i < eccentricity.Length; i++)
+            {
+                if(eccentricity[i] == radius) centralVertices.Add(i);
+            }
+            return centralVertices.ToArray();
+        }
+        public int[] GetPeripheralVertices()
+        {
+            int[] eccentricity = GetEccentricity();
+            List<int> peripheralVertices = new List<int>();
+            int diameter = eccentricity.Max();
+            for (int i = 0; i < eccentricity.Length; i++)
+            {
+                if (eccentricity[i] == diameter) peripheralVertices.Add(i);
+            }
+            return peripheralVertices.ToArray();
+        }
     }
     enum InputFileType
     {
