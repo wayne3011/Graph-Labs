@@ -1,13 +1,25 @@
 ﻿using GraphLab.Components;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+
 namespace GraphLab
 {
     internal class Graph
     {
-        private readonly SortedSet<AdjacentVertex>[] _adjacentList;
+        private readonly SortedSet<AdjacentVertex>[] _adjacentList; 
         public bool IsDirected { get; }
+        Graph(int vertexCount)
+        {
+            IsDirected = false;
+            _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                _adjacentList[i] = new SortedSet<AdjacentVertex>();
+            }
+        }
         public Graph(string filePath, InputFileType fileType)
         {
-
+            
             if (fileType == InputFileType.AdjacencyMatrix)
             {
                 using (StreamReader reader = new StreamReader(filePath))
@@ -15,15 +27,15 @@ namespace GraphLab
                     string matrix = reader.ReadToEnd() ?? string.Empty;
                     int i = 0;
                     List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
-                    foreach (var line in matrix.Split("\n"))
+                    foreach(var line in matrix.Split("\n"))
                     {
                         int j = 0;
                         SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
                         if (line == string.Empty) continue;
-                        foreach (var number in line.Trim('\r', ' ').Split(' '))
+                        foreach (var number in line.Trim('\r',' ').Split(' '))
                         {
                             int weight = Int32.Parse(number);
-                            if (weight != 0) adjacentVerticeSet.Add(new AdjacentVertex(j, weight));
+                            if (weight != 0) adjacentVerticeSet.Add(new AdjacentVertex(j,weight));
                             j++;
                         }
                         adjacentList.Add(adjacentVerticeSet);
@@ -33,13 +45,13 @@ namespace GraphLab
                 }
             }
 
-            else if (fileType == InputFileType.EdgesList)
+            else if(fileType == InputFileType.EdgesList)
             {
                 using (StreamReader reader = new StreamReader(filePath))
                 {
-                    Dictionary<int, SortedSet<AdjacentVertex>> adjacentList = new Dictionary<int, SortedSet<AdjacentVertex>>();
+                    Dictionary<int,SortedSet<AdjacentVertex>> adjacentList = new Dictionary<int, SortedSet<AdjacentVertex>>();
                     string Edges = reader.ReadToEnd() ?? string.Empty;
-                    foreach (var line in Edges.Split('\n'))
+                    foreach(var line in Edges.Split('\n'))
                     {
                         if (line == string.Empty) continue;
                         string[] values = line.Trim(' ').Split(' ');
@@ -50,34 +62,43 @@ namespace GraphLab
                         {
                             adjacentList.Add(vi, new SortedSet<AdjacentVertex>());
                         }
-                        adjacentList[vi].Add(new AdjacentVertex(vj, weight));
+                        adjacentList[vi].Add(new AdjacentVertex(vj,weight));
                     }
                     _adjacentList = adjacentList.Values.ToArray();
                 }
             }
 
-            else if (fileType == InputFileType.AdjacencyList)
+            else if(fileType == InputFileType.AdjacencyList)
             {
-                using (StreamReader reader = new StreamReader(filePath))
+                using(StreamReader reader = new StreamReader(filePath))
                 {
                     List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
                     string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
                     int i = 0;
-                    foreach (var line in AdjacentVertices.Split('\n'))
+                    foreach(var line in AdjacentVertices.Split('\n'))
                     {
                         if (line == string.Empty) continue;
                         string[] values = line.Trim(' ').Split(' ');
                         adjacentList.Add(new SortedSet<AdjacentVertex>());
-                        foreach (var value in values)
+                        foreach(var value in values)
                         {
-                            adjacentList[i].Add(new AdjacentVertex(int.Parse(value) - 1, 1));
+                            adjacentList[i].Add(new AdjacentVertex(int.Parse(value)-1, 1));
                         }
                         i++;
                     }
                     _adjacentList = adjacentList.ToArray();
                 }
             }
-            IsDirected = CheckDirected();
+            IsDirected = CheckDirected();           
+        }
+        public Graph(Graph graph)
+        {
+            IsDirected = graph.IsDirected;
+            _adjacentList = new SortedSet<AdjacentVertex>[graph._adjacentList.Length];
+            for (int i = 0; i < graph._adjacentList.Length; i++)
+            {
+                _adjacentList[i] = new SortedSet<AdjacentVertex>(graph._adjacentList[i]);
+            }
         }
         /// <summary>
         /// Return the adjacency matrix of the Graph
@@ -87,10 +108,10 @@ namespace GraphLab
         {
             int[][] matrix = new int[_adjacentList.Length][];
             int i = 0;
-            foreach (var vertex in _adjacentList)
+            foreach(var vertex in _adjacentList)
             {
-                matrix[i] = new int[_adjacentList.Length];
-                foreach (var element in _adjacentList[i])
+                matrix[i] = new int[_adjacentList.Length]; 
+                foreach(var element in _adjacentList[i])
                 {
                     matrix[i][element.Vj] = element.Weight;
                 }
@@ -113,10 +134,10 @@ namespace GraphLab
                     if (i == j) matrix[i][j] = 0;
                     else
                     {
-                        AdjacentVertex vertex = _adjacentList[i].FirstOrDefault(v => v.Vj == j, new AdjacentVertex(j, int.MaxValue));
+                        AdjacentVertex vertex = _adjacentList[i].FirstOrDefault(v => v.Vj == j,new AdjacentVertex(j,int.MaxValue));
                         matrix[i][j] = vertex.Weight;
                     }
-
+                    
                 }
             }
             return matrix;
@@ -142,7 +163,7 @@ namespace GraphLab
         {
             int[] result = new int[_adjacentList[vertex].Count];
             int i = 0;
-            foreach (var adjacentVertex in _adjacentList[vertex])
+            foreach(var adjacentVertex in _adjacentList[vertex])
             {
                 result[i] = adjacentVertex.Vj;
                 i++;
@@ -156,11 +177,11 @@ namespace GraphLab
         {
             List<Edge> listOfEdges = new List<Edge>();
             int i = 0;
-            foreach (var adjacentVertices in _adjacentList)
+            foreach(var adjacentVertices in _adjacentList)
             {
-                foreach (var vertex in adjacentVertices)
+                foreach(var vertex in adjacentVertices)
                 {
-                    listOfEdges.Add(new Edge(i, vertex.Vj, vertex.Weight));
+                    listOfEdges.Add(new Edge(i, vertex.Vj,vertex.Weight));
                 }
                 i++;
             }
@@ -177,18 +198,18 @@ namespace GraphLab
                 listOfEdges.Add(new Edge(vertex, adjacentVertex.Vj, adjacentVertex.Weight));
             }
             return listOfEdges.ToArray();
-        }
+        } 
         /// <returns>True if Graph is directed</returns>
         private bool CheckDirected()
         {
             bool directed = false;
             for (int i = 0; i < _adjacentList.Length; i++)
             {
-                foreach (var adjacentVertex in _adjacentList[i])
+                foreach(var adjacentVertex in _adjacentList[i])
                 {
                     if (adjacentVertex.Weight != _adjacentList[adjacentVertex.Vj].FirstOrDefault(vertex => vertex.Vj == i, new AdjacentVertex(0, 0)).Weight)
                     {
-                        directed = true;
+                        directed = true; 
                         break;
                     };
                     if (directed) break;
@@ -224,7 +245,7 @@ namespace GraphLab
         /// </returns>
         public DegreeVector GetDegreeVector()
         {
-            DegreeVector degreeVector = new DegreeVector(IsDirected, _adjacentList.Length);
+            DegreeVector degreeVector = new DegreeVector(IsDirected,_adjacentList.Length);
 
             for (int i = 0; i < _adjacentList.Length; i++)
             {
@@ -240,7 +261,7 @@ namespace GraphLab
                     }
                 }
             }
-
+          
             return degreeVector;
         }
         /// <summary>
@@ -299,7 +320,7 @@ namespace GraphLab
             List<int> centralVertices = new List<int>();
             for (int i = 0; i < eccentricity.Length; i++)
             {
-                if (eccentricity[i] == radius) centralVertices.Add(i);
+                if(eccentricity[i] == radius) centralVertices.Add(i);
             }
             return centralVertices.ToArray();
         }
@@ -318,7 +339,122 @@ namespace GraphLab
             }
             return peripheralVertices.ToArray();
         }
-        
+        public int[][] GetСonnectivityСomponents()
+        {
+            List<List<int>> components = new List<List<int>>();
+            HashSet<int> unvisitedVertices = new HashSet<int>();
+            for (int j = 0; j < _adjacentList.Length; j++)
+            {
+                unvisitedVertices.Add(j);
+            }
+            Queue<int> queue = new Queue<int>();
+            int i = 0;
+            while(unvisitedVertices.Count != 0)
+            {
+                int unvisitedVertex = unvisitedVertices.First();
+                queue.Enqueue(unvisitedVertex);
+                unvisitedVertices.Remove(unvisitedVertex);
+                components.Add(new List<int>() { unvisitedVertex });
+                while (queue.Count != 0)
+                {
+                    int currentVertex = queue.Dequeue();
+                    foreach (var neighboringVertex in _adjacentList[currentVertex])
+                    {
+                        if (unvisitedVertices.Contains(neighboringVertex.Vj))
+                        {
+                            unvisitedVertices.Remove(neighboringVertex.Vj);
+                            queue.Enqueue(neighboringVertex.Vj);
+                            components[i].Add(neighboringVertex.Vj);
+                        }
+                    }
+                }
+                i++;
+            }
+            int[][] result = new int[components.Count][];
+            for (int k = 0; k < components.Count; k++)
+            {
+                result[k] =  components[k].ToArray();
+            }
+            return result;
+            
+        }
+        public Graph CorrelatedGraph()
+        {
+            Graph correlatedGraph = new Graph(this);
+            if (!IsDirected) return correlatedGraph;
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                foreach(var adjacentVertex in _adjacentList[i])
+                {
+                    correlatedGraph._adjacentList[adjacentVertex.Vj].Add(new AdjacentVertex(i, adjacentVertex.Weight));
+                }
+                
+            }
+            return correlatedGraph;
+        }
+        public Graph Inverse()
+        {
+            Graph inverseGraph = new Graph(this._adjacentList.Length);
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                foreach(var adjacentVertex in _adjacentList[i])
+                {
+                    inverseGraph._adjacentList[adjacentVertex.Vj].Add(new AdjacentVertex(i, adjacentVertex.Weight));
+                }
+            }
+            return inverseGraph;
+        }
+        private int ClockDfs(int currentVertex, int[] vertices, ref int time)
+        {
+            vertices[currentVertex] = time;
+            foreach (var adjacentVertex in _adjacentList[currentVertex])
+            {
+                if (vertices[adjacentVertex.Vj] == 0) ClockDfs(adjacentVertex.Vj, vertices, ref time);
+            }
+            vertices[currentVertex] = time;
+            time++;
+            return time;
+        }
+        private void DfsKosarayu(List<int> component, int vertex, Dictionary<int, int> map)
+        {
+            map.Remove(vertex);
+            foreach(var adjacentVertex in _adjacentList[vertex])
+            {
+                if (map.ContainsKey(adjacentVertex.Vj)) DfsKosarayu(component, adjacentVertex.Vj, map);
+            }
+            component.Add(vertex);  
+        }
+        public int[][] Kosarayu()
+        {
+            Graph graph = this.Inverse();
+            int[] vertices = new int[this._adjacentList.Length];
+            int time = 1;
+            Dictionary<int,int> map = new Dictionary<int,int>();
+            ClockDfs(0, vertices, ref time);
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                map.Add(i, vertices[i]);
+            }
+            List<List<int>> components = new List<List<int>>();
+            int k = 0;
+            while (map.Count != 0)
+            {
+                components.Add(new List<int>());
+                int max = map.Values.Max();
+                int newVertex = map.First(c => c.Value == max).Key;
+                DfsKosarayu(components[k], newVertex, map);
+                k++;
+            }
+            int[][] result = new int[components.Count][];
+            for (int i = 0; i < components.Count; i++)
+            {
+                result[i] = components[i].ToArray();
+            }
+            return result;
+            
+
+        }
+
     }
     enum InputFileType
     {
@@ -326,5 +462,18 @@ namespace GraphLab
         AdjacencyMatrix,
         AdjacencyList
     };
+    internal static class Extexsions
+    {
+        public static int IndexOf(this int[] array, int value)
+        {
+            int i = 0;
+            for (i = 0; i < array.Length; i++)
+            {
+                if (array[i] == value) break;
+            }
+            return i;
+        }
+    }
+
 
 }
