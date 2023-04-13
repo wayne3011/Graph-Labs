@@ -339,7 +339,7 @@ namespace GraphLab
             }
             return peripheralVertices.ToArray();
         }
-        public int[][] GetСonnectivityСomponents()
+        public int[][] GetConnectivityСomponents()
         {
             List<List<int>> components = new List<List<int>>();
             HashSet<int> unvisitedVertices = new HashSet<int>();
@@ -428,9 +428,12 @@ namespace GraphLab
         {
             Graph graph = this.Inverse();
             int[] vertices = new int[this._adjacentList.Length];
-            int time = 1;            
+            int time = 1;
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                if (vertices[i] == 0) graph.ClockDfs(i, vertices, ref time);
+            }
             
-            ClockDfs(0, vertices, ref time);
 
             List<List<int>> components = new List<List<int>>();
             int k = 0;

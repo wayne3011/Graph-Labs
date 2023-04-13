@@ -18,7 +18,7 @@ namespace GraphLab1
                     Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 1             }");
                     Console.WriteLine("{             АВТОР: ЕРМИЛОВ МАКСИМ              }");
                     Console.WriteLine("{              ГРУППА: М3О-225Бк-21              }");
-                    Console.WriteLine("{  -e <path> - ввод графа с списка рёбер         }");
+                    Console.WriteLine("{  -e <path> - ввод графа со списка рёбер        }");
                     Console.WriteLine("{  -m <path> - ввод графа с матрицы смежности    }");
                     Console.WriteLine("{  -l <path> - ввод графа со списка смежности    }");
                     Console.WriteLine("{  -o <path> - добавление ключа к любоый команде }");
@@ -26,7 +26,7 @@ namespace GraphLab1
                     Console.WriteLine("{------------------------------------------------}");
                 }
             }
-            bool ConsoleOutput = false;
+            bool FileOutput = false;
             StringBuilder? stringBuilder = null;
             StreamWriter? stream = null;
             if (args.Length == 4)
@@ -34,7 +34,7 @@ namespace GraphLab1
                 if (args[2] == "-o")
                 {
                     stream = new StreamWriter(args[3]);
-                    ConsoleOutput = true;
+                    FileOutput = true;
                 }
                 else
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
@@ -58,7 +58,7 @@ namespace GraphLab1
             DegreeVector degreeVector = graph.GetDegreeVector();            
             if (graph.IsDirected)
             {               
-                if(ConsoleOutput)
+                if(FileOutput)
                 {
                     stream.Write("deg+ = ");
                     stream.WriteLine(FormatOutputArray(degreeVector.GetIncomingVector()));
@@ -72,7 +72,7 @@ namespace GraphLab1
             }
             else
             {
-                if (ConsoleOutput)
+                if (FileOutput)
                 {
                     stream.Write("deg = ");
                     stream.WriteLine(FormatOutputArray(degreeVector.GetOutgoingVector()));
@@ -81,7 +81,7 @@ namespace GraphLab1
                 Console.WriteLine(FormatOutputArray(degreeVector.GetOutgoingVector()));
             }
             int[][] FloydWarshallMatrix = graph.FloydWarshallAlgorithm();
-            if (ConsoleOutput)
+            if (FileOutput)
             {
                 stream.WriteLine("Distancies:");
                 stream.Write(FormatOutputMatrix(FloydWarshallMatrix));
@@ -92,7 +92,7 @@ namespace GraphLab1
                 stream.Flush();
                 return;
             }
-            if (ConsoleOutput)
+            if (FileOutput)
             {
                 stream.WriteLine("Eccentricity:");
                 stream.WriteLine(FormatOutputArray(Graph.GetEccentricity(FloydWarshallMatrix)));

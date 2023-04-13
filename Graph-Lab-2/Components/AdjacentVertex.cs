@@ -4,7 +4,7 @@
     {
         public int Vj;
         public int Weight;
-        public bool Mark = false;
+        
         public AdjacentVertex(int vj)
         {
             Vj = vj;
@@ -13,10 +13,7 @@
         {
             Weight = weight;
         }
-        public AdjacentVertex(int vj, int weight, bool mark) : this(vj, weight)
-        {
-            Mark = mark;
-        }
+
 
         public int CompareTo(object? obj)
         {
