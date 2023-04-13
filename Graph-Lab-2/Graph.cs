@@ -415,12 +415,12 @@ namespace GraphLab
             time++;
             return time;
         }
-        private void DfsKosarayu(List<int> component, int vertex, Dictionary<int, int> map)
+        private void DfsKosarayu(List<int> component, int vertex, int[] vertices)
         {
-            map.Remove(vertex);
+            vertices[vertex] = int.MinValue;
             foreach(var adjacentVertex in _adjacentList[vertex])
             {
-                if (map.ContainsKey(adjacentVertex.Vj)) DfsKosarayu(component, adjacentVertex.Vj, map);
+                if (vertices[adjacentVertex.Vj]!=int.MinValue) DfsKosarayu(component, adjacentVertex.Vj, vertices);
             }
             component.Add(vertex);  
         }
@@ -428,21 +428,17 @@ namespace GraphLab
         {
             Graph graph = this.Inverse();
             int[] vertices = new int[this._adjacentList.Length];
-            int time = 1;
-            Dictionary<int,int> map = new Dictionary<int,int>();
+            int time = 1;            
+            
             ClockDfs(0, vertices, ref time);
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                map.Add(i, vertices[i]);
-            }
+
             List<List<int>> components = new List<List<int>>();
             int k = 0;
-            while (map.Count != 0)
+            int newVertex = -1;
+            while ((newVertex = vertices.FirstMax()) >= 0)
             {
                 components.Add(new List<int>());
-                int max = map.Values.Max();
-                int newVertex = map.First(c => c.Value == max).Key;
-                DfsKosarayu(components[k], newVertex, map);
+                DfsKosarayu(components[k], newVertex, vertices);
                 k++;
             }
             int[][] result = new int[components.Count][];
@@ -464,14 +460,20 @@ namespace GraphLab
     };
     internal static class Extexsions
     {
-        public static int IndexOf(this int[] array, int value)
+        public static int FirstMax(this int[] array)
         {
-            int i = 0;
-            for (i = 0; i < array.Length; i++)
+            int indexOfMax = -1;
+            int maxValue = int.MinValue;
+            for (int i = 0; i < array.Length; i++)
             {
-                if (array[i] == value) break;
+                if(array[i] > maxValue)
+                {
+                    maxValue = array[i];
+                    indexOfMax = i;
+                }
             }
-            return i;
+            return indexOfMax;
+            
         }
     }
 

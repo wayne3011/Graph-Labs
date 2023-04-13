@@ -8,8 +8,7 @@ namespace GraphLab2
     {
         static void Main()
         {
-            Graph graph = new Graph("C:\\Users\\user\\source\\repos\\Graph-lab-1\\Graph-Lab-2\\task2\\matrix_t2_004.txt", InputFileType.AdjacencyMatrix);
-            Console.WriteLine(FormatTwoDimensionalArray(graph.Kosarayu()));
+            
         }
         static string FormatTwoDimensionalArray(int[][] array)
         {
