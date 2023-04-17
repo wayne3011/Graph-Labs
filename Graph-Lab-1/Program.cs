@@ -34,6 +34,7 @@ namespace GraphLab1
                 if (args[2] == "-o")
                 {
                     stream = new StreamWriter(args[3]);
+                    stream.AutoFlush = true;
                     FileOutput = true;
                 }
                 else
@@ -89,7 +90,6 @@ namespace GraphLab1
             Console.WriteLine("Distancies:");
             Console.Write(FormatOutputMatrix(FloydWarshallMatrix));
             if (graph.IsDirected) {
-                stream.Flush();
                 return;
             }
             if (FileOutput)
@@ -117,7 +117,6 @@ namespace GraphLab1
             }
             Console.Write("Z = "); Console.WriteLine(FormatOutputArray(centralVertices));
             Console.Write("P = "); Console.WriteLine(FormatOutputArray(peripheralVertices));
-            stream.Flush();
         }
         static void PrintMatrix(int[][] matrix)
         {

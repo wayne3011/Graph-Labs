@@ -34,6 +34,7 @@ namespace GraphLab2
                 if (args[2] == "-o")
                 {
                     stream = new StreamWriter(args[3]);
+                    stream.AutoFlush = true;
                     FileOutput = true;
                 }
                 else
@@ -73,7 +74,6 @@ namespace GraphLab2
                 ouputArrays = FormatTwoDimensionalArray(components);
                 Console.WriteLine(ouputArrays);
                 if (FileOutput) stream.WriteLine(ouputArrays);
-                stream.Flush();
                 return;
             }
 
@@ -111,7 +111,6 @@ namespace GraphLab2
             ouputArrays = FormatTwoDimensionalArray(components);
             Console.WriteLine(ouputArrays);
             if (FileOutput) stream.WriteLine(ouputArrays);
-            stream.Flush();
         }
         static string FormatTwoDimensionalArray(int[][] array)
         {
