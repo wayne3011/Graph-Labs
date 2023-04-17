@@ -1,4 +1,5 @@
-﻿using GraphLab.Components;
+﻿using Graph_Lab3.Components.OutputModels;
+using GraphLab.Components;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -453,7 +454,7 @@ namespace GraphLab
             
 
         }
-        public void dfs(int currentVertex, int parentVertex, int[] tin, int[] tup, ref int time, bool[] used, List<Edge> briges)
+        private void BridgesAndHingesDfs(int currentVertex, int parentVertex, int[] tin, int[] tup, ref int time, bool[] used, List<Edge> briges, HashSet<int> hinges, ref int firstVertexCounter, ref int firstVertex)
         {
             tup[currentVertex] = tin[currentVertex] = time;
             time++;
@@ -461,28 +462,38 @@ namespace GraphLab
             foreach(AdjacentVertex adjacentVertex in _adjacentList[currentVertex])
             {
                 if (adjacentVertex.Vj == parentVertex) continue;
-                else if (used[adjacentVertex.Vj]) tup[adjacentVertex.Vj] = Math.Min(tup[currentVertex], tin[adjacentVertex.Vj]);
+                else if (used[adjacentVertex.Vj]) tup[currentVertex] = Math.Min(tup[currentVertex], tin[adjacentVertex.Vj]);
                 else
                 {
-                    dfs(adjacentVertex.Vj,currentVertex,tin,tup,ref time,used,briges);
+                    BridgesAndHingesDfs(adjacentVertex.Vj,currentVertex,tin,tup,ref time,used,briges,hinges,ref firstVertexCounter, ref firstVertex);
                     tup[currentVertex] = Math.Min(tup[currentVertex], tup[adjacentVertex.Vj]);
-                    if(tup[adjacentVertex.Vj] > tup[currentVertex]) briges.Add(new Edge(currentVertex,adjacentVertex.Vj));
+                    if(tup[adjacentVertex.Vj] > tin[currentVertex]) briges.Add(new Edge(currentVertex,adjacentVertex.Vj));
+                    if (tup[adjacentVertex.Vj] >= tin[currentVertex])
+                    {
+                        if(currentVertex != firstVertex || firstVertexCounter == 1) hinges.Add(currentVertex);
+                        else firstVertexCounter++;
+                    }
                 }
             }
         }
-        public Edge[] BridgeSearch()
+        public BridgesAndHingesResult BridgeAndHingesSearch()
         {
             bool[] used = new bool[_adjacentList.Length];
             int[] tin = new int[_adjacentList.Length];
             int[] tup = new int[_adjacentList.Length];
             List<Edge> bridges = new List<Edge>();
+            HashSet<int> hinges = new HashSet<int> ();
+            BridgesAndHingesResult result = new BridgesAndHingesResult();
             int time = 1;
-
+            
             for (int i = 0; i < _adjacentList.Length; i++)
             {
-                if (used[i] == false) dfs(i, -1, tin, tup, ref time, used, bridges);
+                int firstVertexCounter = 0;
+                if (used[i] == false) BridgesAndHingesDfs(i, -1, tin, tup, ref time, used, bridges, hinges, ref firstVertexCounter, ref i);
             }
-            return bridges.ToArray();
+            result.Bridges = bridges.ToArray();
+            result.Hinges = hinges.ToArray();
+            return result;
         }
 
     }

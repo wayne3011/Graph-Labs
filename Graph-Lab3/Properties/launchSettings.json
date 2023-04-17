@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Graph-Lab3": {
+      "commandName": "Project",
+      "commandLineArgs": "-m C:\\Users\\user\\source\\repos\\Graph-Labs\\Graph-Lab3\\task3\\matrix_t3_009.txt -o result.txt"
+    }
+  }
+}

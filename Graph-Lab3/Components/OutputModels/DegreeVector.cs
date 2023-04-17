@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GraphLab.Components
+namespace Graph_Lab3.Components.OutputModels
 {
     /// <summary>
     /// A class that stores a vector of incoming and outgoing degrees of vertices 
@@ -22,7 +22,7 @@ namespace GraphLab.Components
         {
             _isDirected = isDirected;
             _outgoingVector = new int[vertexCount];
-            if(_isDirected)_incomingVector = new int[vertexCount];
+            if (_isDirected) _incomingVector = new int[vertexCount];
         }
         internal void SetOutgoingVectorDegree(int vertexNumber, int degree)
         {
@@ -35,14 +35,14 @@ namespace GraphLab.Components
         }
         public int[] GetIncomingVector()
         {
-            if(_isDirected) return _incomingVector;
+            if (_isDirected) return _incomingVector;
             else return _outgoingVector;
         }
         public int[] GetOutgoingVector()
         {
             return _outgoingVector;
         }
-        
-        
+
+
     }
 }
