@@ -498,11 +498,42 @@ namespace GraphLab
         public Edge[] Kruscala()
         {
             Queue<Edge> edges = new Queue<Edge>(GetListOfEdges().OrderBy(c => c.weight));
-            while(edges.Count != 0)
+            List<HashSet<int>> sets = new List<HashSet<int>>();
+            List<Edge> result = new List<Edge>();
+            while (edges.Count != 0)
             {
-                Console.WriteLine(edges.Dequeue());
+                Edge edge = edges.Dequeue();
+                int length = sets.Count;
+                int firstVertexIndex = -1;
+                int secondVertexIndex = -1;
+                for (int i = 0; i < length; i++)
+                {
+                    if (sets[i].Contains(edge.vi)) firstVertexIndex = i;
+                    if (sets[i].Contains(edge.vj)) secondVertexIndex = i;
+                    if (firstVertexIndex != -1 && secondVertexIndex != -1) break;
+                }
+                if (firstVertexIndex == secondVertexIndex && (secondVertexIndex != -1)) continue;
+                else if (firstVertexIndex == -1 && secondVertexIndex == -1) sets.Add(new HashSet<int> { edge.vi, edge.vj });
+                else if (firstVertexIndex == -1 || secondVertexIndex == -1)
+                {
+                    if (firstVertexIndex == -1)
+                    {
+                        sets[secondVertexIndex].Add(edge.vi);
+                    }
+                    else
+                    {
+                        sets[firstVertexIndex].Add(edge.vj);
+                    }
+                }
+                else
+                {
+                    HashSet<int> setForJoining = sets[secondVertexIndex];
+                    sets[firstVertexIndex].Union(setForJoining);
+                    sets.RemoveAt(secondVertexIndex);
+                }
+                result.Add(edge);
             }
-            return edges.ToArray();
+            return result.ToArray();
         }
 
     }

@@ -17,7 +17,7 @@
         }
         public override string ToString()
         {
-            return vi + " " + vj + " " + weight +  "\n";
+            return (vi+1) + " " + (vj+1) + " " + weight +  "\n";
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using GraphLab.Components;
 namespace GraphLab
-{
+{ 
     internal class Graph
     {
         private readonly SortedSet<AdjacentVertex>[] _adjacentList;
