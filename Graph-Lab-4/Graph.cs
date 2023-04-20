@@ -7,8 +7,11 @@ namespace GraphLab
 {
     internal class Graph
     {
-        private readonly SortedSet<AdjacentVertex>[] _adjacentList; 
+        private readonly SortedSet<AdjacentVertex>[] _adjacentList;
+        private int[] _vetexComponents;
         public bool IsDirected { get; }
+        private int _edgeCount;
+        public int EdgeCount { get { return _edgeCount; } }
         Graph(int vertexCount)
         {
             IsDirected = false;
@@ -17,89 +20,102 @@ namespace GraphLab
             {
                 _adjacentList[i] = new SortedSet<AdjacentVertex>();
             }
+            _vetexComponents = new int[vertexCount];
         }
         public Graph(string filePath, InputFileType fileType)
         {
-            
-            if (fileType == InputFileType.AdjacencyMatrix)
-            {
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    string matrix = reader.ReadToEnd() ?? string.Empty;
-                    int i = 0;
-                    List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
-                    foreach(var line in matrix.Split("\n"))
-                    {
-                        int j = 0;
-                        SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
-                        if (line == string.Empty) continue;
-                        foreach (var number in line.Trim('\r',' ').Split(' '))
-                        {
-                            int weight = Int32.Parse(number);
-                            if (weight != 0) adjacentVerticeSet.Add(new AdjacentVertex(j,weight));
-                            j++;
-                        }
-                        adjacentList.Add(adjacentVerticeSet);
-                        i++;
-                    }
-                    _adjacentList = adjacentList.ToArray();
-                }
-            }
 
-            else if(fileType == InputFileType.EdgesList)
+            switch (fileType)
             {
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    Dictionary<int,SortedSet<AdjacentVertex>> adjacentList = new Dictionary<int, SortedSet<AdjacentVertex>>();
-                    string Edges = reader.ReadToEnd() ?? string.Empty;
-                    foreach(var line in Edges.Split('\n'))
+                case InputFileType.EdgesList:
+                    using (StreamReader reader = new StreamReader(filePath))
                     {
-                        if (line == string.Empty) continue;
-                        string[] values = line.Trim(' ').Split(' ');
-                        int vi = int.Parse(values[0]) - 1;
-                        int vj = int.Parse(values[1]) - 1;
-                        int weight = values.Length == 2 ? 1 : int.Parse(values[2]);
-                        if (!adjacentList.ContainsKey(vi))
+                        Dictionary<int, SortedSet<AdjacentVertex>> adjacentList = new Dictionary<int, SortedSet<AdjacentVertex>>();
+                        string Edges = reader.ReadToEnd() ?? string.Empty;
+                        foreach (var line in Edges.Split('\n'))
                         {
-                            adjacentList.Add(vi, new SortedSet<AdjacentVertex>());
+                            if (line == string.Empty) continue;
+                            string[] values = line.Trim(' ').Split(' ');
+                            int vi = int.Parse(values[0]) - 1;
+                            int vj = int.Parse(values[1]) - 1;
+                            int weight = values.Length == 2 ? 1 : int.Parse(values[2]);
+                            if (!adjacentList.ContainsKey(vi))
+                            {
+                                adjacentList.Add(vi, new SortedSet<AdjacentVertex>());
+                            }
+                            adjacentList[vi].Add(new AdjacentVertex(vj, weight));
+                            _edgeCount++;
                         }
-                        adjacentList[vi].Add(new AdjacentVertex(vj,weight));
+                        _adjacentList = adjacentList.Values.ToArray();
                     }
-                    _adjacentList = adjacentList.Values.ToArray();
-                }
-            }
-
-            else if(fileType == InputFileType.AdjacencyList)
-            {
-                using(StreamReader reader = new StreamReader(filePath))
-                {
-                    List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
-                    string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
-                    int i = 0;
-                    foreach(var line in AdjacentVertices.Split('\n'))
+                    break;
+                case InputFileType.AdjacencyMatrix:
+                    using (StreamReader reader = new StreamReader(filePath))
                     {
-                        if (line == string.Empty) continue;
-                        string[] values = line.Trim(' ').Split(' ');
-                        adjacentList.Add(new SortedSet<AdjacentVertex>());
-                        foreach(var value in values)
+                        string matrix = reader.ReadToEnd() ?? string.Empty;
+                        int i = 0;
+                        List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
+                        foreach (var line in matrix.Split("\n"))
                         {
-                            adjacentList[i].Add(new AdjacentVertex(int.Parse(value)-1, 1));
+                            int j = 0;
+                            SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
+                            if (line == string.Empty) continue;
+                            foreach (var number in line.Trim('\r', ' ').Split(' '))
+                            {
+                                int weight = Int32.Parse(number);
+                                if (weight != 0)
+                                {
+                                    adjacentVerticeSet.Add(new AdjacentVertex(j, weight));
+                                    _edgeCount++;
+                                }
+                                j++;
+                                
+                            }
+                            adjacentList.Add(adjacentVerticeSet);
+                            i++;
                         }
-                        i++;
+                        _adjacentList = adjacentList.ToArray();
                     }
-                    _adjacentList = adjacentList.ToArray();
-                }
+                    break;
+                case InputFileType.AdjacencyList:
+                    using(StreamReader reader = new StreamReader(filePath))
+                    {
+                        List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
+                        string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
+                        int i = 0;
+                        foreach(var line in AdjacentVertices.Split('\n'))
+                        {
+                            if (line == string.Empty) continue;
+                            string[] values = line.Trim(' ').Split(' ');
+                            adjacentList.Add(new SortedSet<AdjacentVertex>());
+                            foreach(var value in values)
+                            {
+                                adjacentList[i].Add(new AdjacentVertex(int.Parse(value)-1, 1));
+                                _edgeCount++;
+                            }
+                            i++;
+                        }
+                        _adjacentList = adjacentList.ToArray();
+                    }
+                    break;
+                default:
+                    _adjacentList = new SortedSet<AdjacentVertex>[0];
+                    break;
             }
-            IsDirected = CheckDirected();           
+           
+            IsDirected = CheckDirected();
+            _vetexComponents = new int[_adjacentList.Length];
         }
         public Graph(Graph graph)
         {
             IsDirected = graph.IsDirected;
             _adjacentList = new SortedSet<AdjacentVertex>[graph._adjacentList.Length];
+            _edgeCount = graph._edgeCount;
             for (int i = 0; i < graph._adjacentList.Length; i++)
             {
                 _adjacentList[i] = new SortedSet<AdjacentVertex>(graph._adjacentList[i]);
             }
+            _vetexComponents = new int[graph._adjacentList.Length];
         }
         /// <summary>
         /// Return the adjacency matrix of the Graph
@@ -148,7 +164,7 @@ namespace GraphLab
         /// </summary>
         public int Weight(int vi, int vj)
         {
-            return _adjacentList[vi].FirstOrDefault(vertex => vertex.Vj == vj, new AdjacentVertex(0, 0)).Weight;
+            return _adjacentList[vi].FirstOrDefault(vertex => vertex.Vj == vj, new AdjacentVertex(0, int.MaxValue)).Weight;
         }
         /// <summary>
         /// Check for an edge
@@ -340,6 +356,19 @@ namespace GraphLab
             }
             return peripheralVertices.ToArray();
         }
+        public void AddEdge(int vi, int vj, int weight)
+        {
+            if (!_adjacentList[vi].Contains(new AdjacentVertex(vj, 0))) _edgeCount++;
+            _adjacentList[vi].Add(new AdjacentVertex(vj, weight));
+            if (!IsDirected) _adjacentList[vj].Add(new AdjacentVertex(vi, weight));
+        }
+        public void AddEdge(Edge newEdge)
+        {
+            if (!_adjacentList[newEdge.vi].Contains(new AdjacentVertex(newEdge.vj, 0))) _edgeCount++;
+            _adjacentList[newEdge.vi].Add(new AdjacentVertex(newEdge.vj, newEdge.weight));
+            if(!IsDirected) _adjacentList[newEdge.vj].Add(new AdjacentVertex(newEdge.vi, newEdge.weight));
+
+        }
         public int[][] GetConnectivityСomponents()
         {
             List<List<int>> components = new List<List<int>>();
@@ -366,6 +395,7 @@ namespace GraphLab
                             unvisitedVertices.Remove(neighboringVertex.Vj);
                             queue.Enqueue(neighboringVertex.Vj);
                             components[i].Add(neighboringVertex.Vj);
+                            _vetexComponents[neighboringVertex.Vj] = i;
                         }
                     }
                 }
@@ -378,6 +408,10 @@ namespace GraphLab
             }
             return result;
             
+        }
+        public bool GetConnectedness()
+        {
+            return GetConnectivityСomponents().Length == 1;
         }
         public Graph CorrelatedGraph()
         {
@@ -451,8 +485,7 @@ namespace GraphLab
                 result[i] = components[i].ToArray();
             }
             return result;
-            
-
+            PriorityQueue<int, int> pq = new PriorityQueue<int, int>();
         }
         private void BridgesAndHingesDfs(int currentVertex, int parentVertex, int[] tin, int[] tup, ref int time, bool[] used, List<Edge> briges, HashSet<int> hinges, ref int firstVertexCounter, ref int firstVertex)
         {
@@ -528,12 +561,107 @@ namespace GraphLab
                 else
                 {
                     HashSet<int> setForJoining = sets[secondVertexIndex];
-                    sets[firstVertexIndex].Union(setForJoining);
+                    sets[firstVertexIndex] = new HashSet<int>(sets[firstVertexIndex].Union(setForJoining));
                     sets.RemoveAt(secondVertexIndex);
                 }
                 result.Add(edge);
             }
             return result.ToArray();
+        }
+        public Edge[] Prima()
+        {
+            List<Edge> tree = new List<Edge>();
+            HashSet<int> visited = new HashSet<int>();
+            bool[] used = new bool[_adjacentList.Length]; 
+            visited.Add(0);
+            while(tree.Count != _adjacentList.Length - 1)
+            {
+                int minWeightEdge = int.MaxValue;
+                int minWeightVertexNumber = -1;
+                int minWeigthVertexParent = -1;
+                foreach(var vertex in visited)
+                { 
+                    foreach(var adjacentVertex in _adjacentList[vertex])
+                    {
+                        if (!visited.Contains(adjacentVertex.Vj) && Weight(vertex,adjacentVertex.Vj) < minWeightEdge)
+                        {
+                            minWeightEdge = Weight(vertex, adjacentVertex.Vj);
+                            minWeightVertexNumber = adjacentVertex.Vj;
+                            minWeigthVertexParent = vertex;
+                        }
+                    }
+                }
+                used[minWeightVertexNumber] = true;
+                tree.Add(new Edge(minWeigthVertexParent, minWeightVertexNumber, Weight(minWeigthVertexParent, minWeightVertexNumber)));
+                visited.Add(minWeightVertexNumber);
+                
+            }
+            return tree.ToArray();
+        }
+        public int[] GetBoruvkaComponents(out int componentsCount)
+        {
+            //List<List<int>> components = new List<List<int>>();
+            int[] components = new int[_adjacentList.Length];
+            bool[] visited = new bool[_adjacentList.Length];
+            int j = 0;
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                if (!visited[i])
+                {
+                    GetBoruvkaComponentsDFS(j,visited,i,components);
+                    j++;
+                }
+            }
+            componentsCount = j;
+            return components;
+        }
+        private void GetBoruvkaComponentsDFS(int currentComponent, bool[] visited, int currentVertex, int[] components)
+        {
+            visited[currentVertex] = true;
+            components[currentVertex] = currentComponent;
+            foreach(var adjacentVertex in _adjacentList[currentVertex])
+            {
+                if(!visited[adjacentVertex.Vj]) GetBoruvkaComponentsDFS(currentComponent, visited, adjacentVertex.Vj,components);
+            }
+        }
+        public Edge[] Boruvka()
+        {
+            //List<Edge> tree = new List<Edge>();
+            Graph tree = new Graph(_adjacentList.Length);
+            //List<List<int>> components = new List<List<int>>();
+            int[] components;
+            Edge[] edges = GetListOfEdges();
+            while (tree.EdgeCount != _adjacentList.Length - 1)
+            {
+                int minEdgeSize;
+                components = tree.GetBoruvkaComponents(out minEdgeSize);
+                Edge[] minEdge = new Edge[minEdgeSize];//?? MAP
+                for(int i = 0; i < minEdge.Length; i++)
+                {
+                    minEdge[i] = new Edge(0,0,int.MaxValue);
+                }
+                for (int i = 0; i < edges.Length; i++)
+                {
+                    if (components[edges[i].vi] != components[edges[i].vj])
+                    {
+                        if (minEdge[components[edges[i].vi]].weight > edges[i].weight)
+                        {
+                            minEdge[components[edges[i].vi]] = edges[i];
+                        }
+                        if (minEdge[components[edges[i].vj]].weight > edges[i].weight)
+                        {
+                            minEdge[components[edges[i].vj]] = edges[i];
+                        }
+                    }
+                }
+                for(int i = 0; i < minEdge.Length; i++)
+                {
+                    if (minEdge[i].weight != int.MaxValue) tree.AddEdge(minEdge[i]);
+                    if (minEdge[i].weight != int.MaxValue) tree.AddEdge(minEdge[i]);
+                }
+                
+            }
+            return tree.GetListOfEdges();
         }
 
     }
