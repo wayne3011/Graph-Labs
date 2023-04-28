@@ -2,6 +2,7 @@
 using GraphLab.Components;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace GraphLab
 {
@@ -60,7 +61,7 @@ namespace GraphLab
                             int j = 0;
                             SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
                             if (line == string.Empty) continue;
-                            foreach (var number in line.Trim('\r', ' ').Split(' '))
+                            foreach (var number in Regex.Replace(line,",",String.Empty).Trim('\r', ' ').Split(' '))
                             {
                                 int weight = Int32.Parse(number);
                                 if (weight != 0)
