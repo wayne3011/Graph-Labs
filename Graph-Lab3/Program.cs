@@ -73,7 +73,7 @@ namespace GraphLab3
         } 
         static string FormatEdgesArray(Edge[] array)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.Append('[');
             if (array.Length == 0)
             {

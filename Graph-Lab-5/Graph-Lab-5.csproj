@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Graph.cs\" />
+    <Compile Remove="Graph.cs\**" />
+    <EmbeddedResource Remove="Graph.cs\**" />
+    <None Remove="Graph.cs\**" />
   </ItemGroup>
 
 </Project>
