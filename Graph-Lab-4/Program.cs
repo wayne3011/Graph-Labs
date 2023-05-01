@@ -1,42 +1,168 @@
-﻿using GraphLab;
-using GraphLab.Components;
-using System.Diagnostics.CodeAnalysis;
+﻿using GraphLab.Components;
 using System.Text;
+using GraphLab;
+using Graph_Lab3.Components.OutputModels;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
-Graph graph = new Graph("C:\\Users\\user\\Desktop\\graph.txt", InputFileType.AdjacencyMatrix);
-Console.WriteLine(graph.GetListOfEdges().Length);
-//graph = graph.CorrelatedGraph();
-int[][] components = graph.Kosarayu();
-Console.WriteLine(FormatTwoDimensionalArray(components));
-//graph = graph.CorrelatedGraph();
-////Console.WriteLine(graph.GetConnectedness());
-//Edge[] ed = graph.Boruvka();
-//int sum = 0;
-//foreach (Edge edge in ed)
-//{
-//    Console.WriteLine(edge);
-//    sum += edge.weight;
-//}
-//Console.WriteLine(sum);
-static string FormatTwoDimensionalArray(int[][] array)
+namespace GraphLab3
 {
-    StringBuilder sb = new StringBuilder();
-    sb.Append('[');
-    for (int i = 0; i < array.Length - 1; i++)
+    internal class Program
     {
-        sb.AppendFormat("{0}, ", FormatOutputArray(array[i]));
+        static void Main(string[] args)
+        {
+            Console.OutputEncoding = Encoding.UTF8;
+            if (args.Length == 1)
+            {
+                if (args[0] == "-h")
+                {
+                    Console.WriteLine("{------------------------------------------------}");
+                    Console.WriteLine("{                  ТЕОРИЯ ГРАФОВ                 }");
+                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 4             }");
+                    Console.WriteLine("{             АВТОР: ЕРМИЛОВ МАКСИМ              }");
+                    Console.WriteLine("{              ГРУППА: М3О-225Бк-21              }");
+                    Console.WriteLine("{  -e <path> - ввод графа со списка рёбер        }");
+                    Console.WriteLine("{  -m <path> - ввод графа с матрицы смежности    }");
+                    Console.WriteLine("{  -l <path> - ввод графа со списка смежности    }");
+                    Console.WriteLine("{  -o <path> - добавление ключа к любоый команде }");
+                    Console.WriteLine("{              выведет резултат в файл           }");
+                    Console.WriteLine("{  -k          алгоритм Крускала                 }");
+                    Console.WriteLine("{  -p          алгоритм Прима                    }");
+                    Console.WriteLine("{  -b          алгоритм Борувки                  }");
+                    Console.WriteLine("{  -s          замер скорости работы             }");
+                    Console.WriteLine("{                     всех алгоритмов            }");
+                    Console.WriteLine("{------------------------------------------------}");
+                }
+            }
+
+
+            MultiWriter multiWriter;
+            if (args.Length == 4)
+            {
+                if (args[2] == "-o")
+                {
+                    multiWriter = new MultiWriter(new List<Stream>() { new StreamWriter(args[3]).BaseStream, Console.OpenStandardOutput() });
+                }
+                else
+                {
+                    Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
+                    return;
+                }
+
+            }
+            else
+            {
+                multiWriter = new MultiWriter(new List<Stream>() { Console.OpenStandardOutput() });
+            }
+            Graph? graph = null;
+            switch (args[0])
+            {
+                case "-e":
+                    graph = new Graph(args[1], InputFileType.EdgesList);
+                    break;
+                case "-l":
+                    graph = new Graph(args[1], InputFileType.AdjacencyList);
+                    break;
+                case "-m":
+                    graph = new Graph(args[1], InputFileType.AdjacencyMatrix);
+                    break;
+                default:
+                    Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
+                    break;
+            }
+            if (graph.IsDirected) graph = graph.CorrelatedGraph();
+            int actionKeyIndex = args.Length == 5 ? 4 : 2;
+            Edge[] spanningTree = new Edge[0];
+            switch (args[actionKeyIndex])
+            {
+                case "-k":
+                    spanningTree = graph.Kruscala();
+                    break;
+                case "-p":
+                    spanningTree = graph.Prima();
+                    break;
+                case "-b":
+                    spanningTree = graph.Boruvka().ToUndirectedTree();
+                    break;
+                case "-s":
+                    Stopwatch timer = Stopwatch.StartNew();
+                    spanningTree = graph.Kruscala();
+                    timer.Stop();
+                    multiWriter.WriteLine("Kruscala: " + timer.ElapsedMilliseconds);
+                    timer.Restart();
+                    graph.Prima();
+                    timer.Stop();
+                    multiWriter.WriteLine("Prima: " + timer.ElapsedMilliseconds);
+                    timer.Restart();
+                    graph.Boruvka();
+                    timer.Stop();
+                    multiWriter.WriteLine("Boruvka " + timer.ElapsedMilliseconds);
+                    break;
+            }
+            //int sum = 0;
+            multiWriter.WriteLine(FormatEdgesArray(spanningTree, out int sum));
+            //Graph graph1 = new Graph(graph.GetVertexCount());
+            multiWriter.WriteLine("Weight of spanning tree:" + sum);
+
+        }
+        
+        static string FormatEdgesArray(Edge[] array, out int sum)
+        {
+            StringBuilder sb = new StringBuilder();
+            sum = 0;
+            sb.Append('[');
+            if (array.Length == 0)
+            {
+                sb.Append("]");
+                return sb.ToString();
+            }
+            for (int i = 0; i < array.Length - 1; i++)
+            {
+                sum += array[i].weight;
+                sb.AppendFormat("({0}, {1}, {2}), ", array[i].vi + 1, array[i].vj + 1, array[i].weight);
+            }
+            sum += array[array.Length - 1].weight;
+            sb.AppendFormat("({0}, {1}, {2})]", array[array.Length - 1].vi + 1, array[array.Length - 1].vj + 1, array[array.Length - 1].weight);
+            return sb.ToString();
+        }
+        static string FormatOutputArray(int[] array)
+        {
+            StringBuilder result = new StringBuilder("[", array.Length * 2);
+            if (array.Length == 0)
+            {
+                result.Append("]");
+                return result.ToString();
+            }
+            array = array.OrderBy(c => c).ToArray();
+            for (int i = 0; i < array.Length - 1; i++)
+            {
+                result.AppendFormat("{0}, ", array[i] + 1);
+            }
+            result.AppendFormat("{0}]", array[array.Length - 1] + 1);
+            return result.ToString();
+        }
+
     }
-    sb.Append(FormatOutputArray(array[array.Length - 1]));
-    sb.Append(']');
-    return sb.ToString();
-}
-static string FormatOutputArray(int[] array)
-{
-    StringBuilder result = new StringBuilder("[", array.Length * 2);
-    for (int i = 0; i < array.Length - 1; i++)
+    internal static class Extensions
     {
-        result.AppendFormat("{0}, ", array[i] + 1);
+
+        public static Edge[] ToUndirectedTree(this Edge[] edges)
+        {
+            Edge[] newEdges = new Edge[edges.Length / 2];
+            List<KeyValuePair<int, int>> visited = new List<KeyValuePair<int, int>>();
+            int j = 0;
+            for (int i = 0; i < edges.Length; i++)
+            {
+                if (visited.FirstOrDefault(pair => pair.Key == edges[i].vj && pair.Value == edges[i].vi,new KeyValuePair<int,int>(-1,-1)).Value == -1)
+                {
+                    newEdges[j] = edges[i];
+                    visited.Add(new KeyValuePair<int, int>(edges[i].vi, edges[i].vj));
+                    j++;
+                }
+            }
+            return newEdges;
+        }
+
     }
-    result.AppendFormat("{0}]", array[array.Length - 1] + 1);
-    return result.ToString();
 }
