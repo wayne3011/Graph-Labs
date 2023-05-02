@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GraphLab
+﻿namespace GraphLab
 {
-    internal class MultiWriter
+    class MultiWriter
     {
         StreamWriter[] streams;
         public MultiWriter(IEnumerable<Stream> streams)
