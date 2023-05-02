@@ -16,7 +16,7 @@ namespace GraphLab3
                 {
                     Console.WriteLine("{------------------------------------------------}");
                     Console.WriteLine("{                  ТЕОРИЯ ГРАФОВ                 }");
-                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 2             }");
+                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 3             }");
                     Console.WriteLine("{             АВТОР: ЕРМИЛОВ МАКСИМ              }");
                     Console.WriteLine("{              ГРУППА: М3О-225Бк-21              }");
                     Console.WriteLine("{  -e <path> - ввод графа со списка рёбер        }");
@@ -73,7 +73,7 @@ namespace GraphLab3
         } 
         static string FormatEdgesArray(Edge[] array)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.Append('[');
             if (array.Length == 0)
             {

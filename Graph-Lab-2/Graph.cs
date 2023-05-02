@@ -1,5 +1,6 @@
 ﻿using GraphLab.Components;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
 using System.Security.Cryptography;
 
 namespace GraphLab
@@ -64,7 +65,17 @@ namespace GraphLab
                         }
                         adjacentList[vi].Add(new AdjacentVertex(vj,weight));
                     }
-                    _adjacentList = adjacentList.Values.ToArray();
+                    int vertexCount = adjacentList.Keys.Max() + 1;
+                    _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
+
+                    for (int i = 0; i < vertexCount; i++)
+                    {
+                        _adjacentList[i] = new SortedSet<AdjacentVertex>(); 
+                    }
+                    foreach (var pair in adjacentList)
+                    {
+                        _adjacentList[pair.Key] = pair.Value;
+                    }
                 }
             }
 
@@ -77,7 +88,11 @@ namespace GraphLab
                     int i = 0;
                     foreach(var line in AdjacentVertices.Split('\n'))
                     {
-                        if (line == string.Empty) continue;
+                        if (line == string.Empty)
+                        {
+                            adjacentList.Add(new SortedSet<AdjacentVertex>());
+                            continue;
+                        };
                         string[] values = line.Trim(' ').Split(' ');
                         adjacentList.Add(new SortedSet<AdjacentVertex>());
                         foreach(var value in values)

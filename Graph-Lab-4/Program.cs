@@ -4,6 +4,7 @@ using GraphLab;
 using Graph_Lab3.Components.OutputModels;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace GraphLab3
 {
@@ -18,7 +19,7 @@ namespace GraphLab3
                 {
                     Console.WriteLine("{------------------------------------------------}");
                     Console.WriteLine("{                  ТЕОРИЯ ГРАФОВ                 }");
-                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 2             }");
+                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 4             }");
                     Console.WriteLine("{             АВТОР: ЕРМИЛОВ МАКСИМ              }");
                     Console.WriteLine("{              ГРУППА: М3О-225Бк-21              }");
                     Console.WriteLine("{  -e <path> - ввод графа со списка рёбер        }");
@@ -26,6 +27,11 @@ namespace GraphLab3
                     Console.WriteLine("{  -l <path> - ввод графа со списка смежности    }");
                     Console.WriteLine("{  -o <path> - добавление ключа к любоый команде }");
                     Console.WriteLine("{              выведет резултат в файл           }");
+                    Console.WriteLine("{  -k          алгоритм Крускала                 }");
+                    Console.WriteLine("{  -p          алгоритм Прима                    }");
+                    Console.WriteLine("{  -b          алгоритм Борувки                  }");
+                    Console.WriteLine("{  -s          замер скорости работы             }");
+                    Console.WriteLine("{                     всех алгоритмов            }");
                     Console.WriteLine("{------------------------------------------------}");
                 }
             }
@@ -43,7 +49,7 @@ namespace GraphLab3
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     return;
                 }
-                
+
             }
             else
             {
@@ -65,9 +71,10 @@ namespace GraphLab3
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     break;
             }
+            if (graph.IsDirected) graph = graph.CorrelatedGraph();
             int actionKeyIndex = args.Length == 5 ? 4 : 2;
             Edge[] spanningTree = new Edge[0];
-            switch(args[actionKeyIndex]) 
+            switch (args[actionKeyIndex])
             {
                 case "-k":
                     spanningTree = graph.Kruscala();
@@ -76,11 +83,11 @@ namespace GraphLab3
                     spanningTree = graph.Prima();
                     break;
                 case "-b":
-                    spanningTree = graph.Boruvka();
+                    spanningTree = graph.Boruvka().ToUndirectedTree();
                     break;
                 case "-s":
                     Stopwatch timer = Stopwatch.StartNew();
-                    graph.Kruscala();
+                    spanningTree = graph.Kruscala();
                     timer.Stop();
                     multiWriter.WriteLine("Kruscala: " + timer.ElapsedMilliseconds);
                     timer.Restart();
@@ -94,11 +101,13 @@ namespace GraphLab3
                     break;
             }
             //int sum = 0;
-            multiWriter.WriteLine(FormatEdgesArray(spanningTree,out int sum));
-            multiWriter.WriteLine("Weight of spanning tree:"+ (sum/2));
+            multiWriter.WriteLine(FormatEdgesArray(spanningTree, out int sum));
+            //Graph graph1 = new Graph(graph.GetVertexCount());
+            multiWriter.WriteLine("Weight of spanning tree:" + sum);
 
         }
-        static string FormatEdgesArray(Edge[] array,out int sum)
+        
+        static string FormatEdgesArray(Edge[] array, out int sum)
         {
             StringBuilder sb = new StringBuilder();
             sum = 0;
@@ -111,10 +120,10 @@ namespace GraphLab3
             for (int i = 0; i < array.Length - 1; i++)
             {
                 sum += array[i].weight;
-                sb.AppendFormat("({0}, {1}, {2}), ", array[i].vi+1, array[i].vj+1, array[i].weight);
+                sb.AppendFormat("({0}, {1}, {2}), ", array[i].vi + 1, array[i].vj + 1, array[i].weight);
             }
-            sum += array[array.Length-1].weight;
-            sb.AppendFormat("({0}, {1}, {2})]", array[array.Length-1].vi+1, array[array.Length-1].vj+1, array[array.Length-1].weight);
+            sum += array[array.Length - 1].weight;
+            sb.AppendFormat("({0}, {1}, {2})]", array[array.Length - 1].vi + 1, array[array.Length - 1].vj + 1, array[array.Length - 1].weight);
             return sb.ToString();
         }
         static string FormatOutputArray(int[] array)
@@ -133,5 +142,27 @@ namespace GraphLab3
             result.AppendFormat("{0}]", array[array.Length - 1] + 1);
             return result.ToString();
         }
+
+    }
+    internal static class Extensions
+    {
+
+        public static Edge[] ToUndirectedTree(this Edge[] edges)
+        {
+            Edge[] newEdges = new Edge[edges.Length / 2];
+            List<KeyValuePair<int, int>> visited = new List<KeyValuePair<int, int>>();
+            int j = 0;
+            for (int i = 0; i < edges.Length; i++)
+            {
+                if (visited.FirstOrDefault(pair => pair.Key == edges[i].vj && pair.Value == edges[i].vi,new KeyValuePair<int,int>(-1,-1)).Value == -1)
+                {
+                    newEdges[j] = edges[i];
+                    visited.Add(new KeyValuePair<int, int>(edges[i].vi, edges[i].vj));
+                    j++;
+                }
+            }
+            return newEdges;
+        }
+
     }
 }

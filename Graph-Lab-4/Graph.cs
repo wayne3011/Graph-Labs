@@ -13,6 +13,7 @@ namespace GraphLab
         public bool IsDirected { get; }
         private int _edgeCount;
         public int EdgeCount { get { return _edgeCount; } }
+        public int VertexCount { get { return _adjacentList.Length; } }
         Graph(int vertexCount)
         {
             IsDirected = false;
@@ -45,9 +46,18 @@ namespace GraphLab
                                 adjacentList.Add(vi, new SortedSet<AdjacentVertex>());
                             }
                             adjacentList[vi].Add(new AdjacentVertex(vj, weight));
-                            _edgeCount++;
                         }
-                        _adjacentList = adjacentList.Values.ToArray();
+                        int vertexCount = adjacentList.Keys.Max() + 1;
+                        _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
+
+                        for (int i = 0; i < vertexCount; i++)
+                        {
+                            _adjacentList[i] = new SortedSet<AdjacentVertex>();
+                        }
+                        foreach (var pair in adjacentList)
+                        {
+                            _adjacentList[pair.Key] = pair.Value;
+                        }
                     }
                     break;
                 case InputFileType.AdjacencyMatrix:
@@ -79,20 +89,23 @@ namespace GraphLab
                     }
                     break;
                 case InputFileType.AdjacencyList:
-                    using(StreamReader reader = new StreamReader(filePath))
+                    using (StreamReader reader = new StreamReader(filePath))
                     {
                         List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
                         string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
                         int i = 0;
-                        foreach(var line in AdjacentVertices.Split('\n'))
+                        foreach (var line in AdjacentVertices.Split('\n'))
                         {
-                            if (line == string.Empty) continue;
+                            if (line == string.Empty)
+                            {
+                                adjacentList.Add(new SortedSet<AdjacentVertex>());
+                                continue;
+                            };
                             string[] values = line.Trim(' ').Split(' ');
                             adjacentList.Add(new SortedSet<AdjacentVertex>());
-                            foreach(var value in values)
+                            foreach (var value in values)
                             {
-                                adjacentList[i].Add(new AdjacentVertex(int.Parse(value)-1, 1));
-                                _edgeCount++;
+                                adjacentList[i].Add(new AdjacentVertex(int.Parse(value) - 1, 1));
                             }
                             i++;
                         }
@@ -575,7 +588,7 @@ namespace GraphLab
             HashSet<int> visited = new HashSet<int>();
             bool[] used = new bool[_adjacentList.Length]; 
             visited.Add(0);
-            while(tree.Count != _adjacentList.Length - 1)
+            while(tree.Count != _adjacentList.Length -1)
             {
                 int minWeightEdge = int.MaxValue;
                 int minWeightVertexNumber = -1;
