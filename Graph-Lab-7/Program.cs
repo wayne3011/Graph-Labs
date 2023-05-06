@@ -65,6 +65,7 @@ namespace GraphLab3
                     graph = new Graph(args[1], InputFileType.AdjacencyMatrix);
                     break;
                 default:
+                    graph = new Graph();
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     break;
             }

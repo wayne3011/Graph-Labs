@@ -41,7 +41,6 @@ namespace Graph_Lab_7
                     if (newEdge.vi != newEdge.vj && newEdge.weight != int.MaxValue) paths.Add(newEdge);
                 }
             }
-
             return paths.ToArray();
         }
     }

@@ -42,7 +42,6 @@ namespace Graph_Lab_5
                     
                 }
             }
-            
             return markers;
         }
     }

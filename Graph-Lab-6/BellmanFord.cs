@@ -32,7 +32,7 @@ namespace Graph_Lab_6
             }
             foreach(var edge in edgeList)
             {
-                if (markers[edge.vj] > markers[edge.vi] + edge.weight) throw new Exception("Negative Cycle!");
+                if (markers[edge.vj] > (markers[edge.vi] == int.MaxValue ? int.MaxValue : markers[edge.vi] + edge.weight)) throw new Exception("Negative Cycle!");
             }
             return markers;
         }
