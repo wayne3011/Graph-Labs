@@ -588,6 +588,7 @@ namespace GraphLab
             HashSet<int> visited = new HashSet<int>();
             bool[] used = new bool[_adjacentList.Length]; 
             visited.Add(0);
+            used[0] = true;
             while(tree.Count != _adjacentList.Length -1)
             {
                 int minWeightEdge = int.MaxValue;
@@ -597,9 +598,9 @@ namespace GraphLab
                 { 
                     foreach(var adjacentVertex in _adjacentList[vertex])
                     {
-                        if (!visited.Contains(adjacentVertex.Vj) && Weight(vertex,adjacentVertex.Vj) < minWeightEdge)
+                        if (!used[adjacentVertex.Vj] && adjacentVertex.Weight < minWeightEdge)
                         {
-                            minWeightEdge = Weight(vertex, adjacentVertex.Vj);
+                            minWeightEdge = adjacentVertex.Weight;
                             minWeightVertexNumber = adjacentVertex.Vj;
                             minWeigthVertexParent = vertex;
                         }
