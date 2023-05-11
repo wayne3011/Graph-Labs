@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Graph-Lab-7": {
+      "commandName": "Project",
+      "commandLineArgs": "-m \"C:\\Users\\Максим\\source\\repos\\Graph-lab-1\\Graph-Lab-7\\task7\\matrix_t7_001.txt\""
+    }
+  }
+}
