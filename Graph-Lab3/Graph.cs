@@ -2,6 +2,7 @@
 using GraphLab.Components;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace GraphLab
 {
@@ -20,90 +21,97 @@ namespace GraphLab
         }
         public Graph(string filePath, InputFileType fileType)
         {
-            
-            if (fileType == InputFileType.AdjacencyMatrix)
+
+            switch (fileType)
             {
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    string matrix = reader.ReadToEnd() ?? string.Empty;
-                    int i = 0;
-                    List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
-                    foreach(var line in matrix.Split("\n"))
+                case InputFileType.EdgesList:
+                    using (StreamReader reader = new StreamReader(filePath))
                     {
-                        int j = 0;
-                        SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
-                        if (line == string.Empty) continue;
-                        foreach (var number in line.Trim('\r',' ').Split(' '))
+                        Dictionary<int, SortedSet<AdjacentVertex>> adjacentList = new Dictionary<int, SortedSet<AdjacentVertex>>();
+                        string Edges = reader.ReadToEnd() ?? string.Empty;
+                        foreach (var line in Edges.Split('\n'))
                         {
-                            int weight = Int32.Parse(number);
-                            if (weight != 0) adjacentVerticeSet.Add(new AdjacentVertex(j,weight));
-                            j++;
+                            if (line == string.Empty) continue;
+                            string[] values = line.Trim(' ').Split(' ');
+                            int vi = int.Parse(values[0]) - 1;
+                            int vj = int.Parse(values[1]) - 1;
+                            int weight = values.Length == 2 ? 1 : int.Parse(values[2]);
+                            if (!adjacentList.ContainsKey(vi))
+                            {
+                                adjacentList.Add(vi, new SortedSet<AdjacentVertex>());
+                            }
+                            adjacentList[vi].Add(new AdjacentVertex(vj, weight));
                         }
-                        adjacentList.Add(adjacentVerticeSet);
-                        i++;
-                    }
-                    _adjacentList = adjacentList.ToArray();
-                }
-            }
+                        int vertexCount = adjacentList.Keys.Max() + 1;
+                        _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
 
-            else if (fileType == InputFileType.EdgesList)
-            {
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    Dictionary<int, SortedSet<AdjacentVertex>> adjacentList = new Dictionary<int, SortedSet<AdjacentVertex>>();
-                    string Edges = reader.ReadToEnd() ?? string.Empty;
-                    foreach (var line in Edges.Split('\n'))
-                    {
-                        if (line == string.Empty) continue;
-                        string[] values = line.Trim(' ').Split(' ');
-                        int vi = int.Parse(values[0]) - 1;
-                        int vj = int.Parse(values[1]) - 1;
-                        int weight = values.Length == 2 ? 1 : int.Parse(values[2]);
-                        if (!adjacentList.ContainsKey(vi))
+                        for (int i = 0; i < vertexCount; i++)
                         {
-                            adjacentList.Add(vi, new SortedSet<AdjacentVertex>());
+                            _adjacentList[i] = new SortedSet<AdjacentVertex>();
                         }
-                        adjacentList[vi].Add(new AdjacentVertex(vj, weight));
-                    }
-                    int vertexCount = adjacentList.Keys.Max() + 1;
-                    _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
-
-                    for (int i = 0; i < vertexCount; i++)
-                    {
-                        _adjacentList[i] = new SortedSet<AdjacentVertex>();
-                    }
-                    foreach (var pair in adjacentList)
-                    {
-                        _adjacentList[pair.Key] = pair.Value;
-                    }
-                }
-            }
-
-            else if (fileType == InputFileType.AdjacencyList)
-            {
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
-                    string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
-                    int i = 0;
-                    foreach (var line in AdjacentVertices.Split('\n'))
-                    {
-                        if (line == string.Empty)
+                        foreach (var pair in adjacentList)
                         {
+                            _adjacentList[pair.Key] = pair.Value;
+                        }
+                    }
+                    break;
+                case InputFileType.AdjacencyMatrix:
+                    using (StreamReader reader = new StreamReader(filePath))
+                    {
+                        string matrix = reader.ReadToEnd() ?? string.Empty;
+                        int i = 0;
+                        List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
+                        foreach (var line in matrix.Split("\n"))
+                        {
+                            int j = 0;
+                            SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
+                            if (line == string.Empty) continue;
+                            foreach (var number in Regex.Replace(line, ",", String.Empty).Trim('\r', ' ').Split(' '))
+                            {
+                                int weight = Int32.Parse(number);
+                                if (weight != 0)
+                                {
+                                    adjacentVerticeSet.Add(new AdjacentVertex(j, weight));
+                                }
+                                j++;
+
+                            }
+                            adjacentList.Add(adjacentVerticeSet);
+                            i++;
+                        }
+                        _adjacentList = adjacentList.ToArray();
+                    }
+                    break;
+                case InputFileType.AdjacencyList:
+                    using (StreamReader reader = new StreamReader(filePath))
+                    {
+                        List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
+                        string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
+                        AdjacentVertices = AdjacentVertices.Remove(AdjacentVertices.Length - 1);
+                        int i = 0;
+                        foreach (var line in AdjacentVertices.Split('\n'))
+                        {
+                            if (line == string.Empty)
+                            {
+                                adjacentList.Add(new SortedSet<AdjacentVertex>());
+                                continue;
+                            };
+                            string[] values = line.Trim(' ').Split(' ');
                             adjacentList.Add(new SortedSet<AdjacentVertex>());
-                            continue;
-                        };
-                        string[] values = line.Trim(' ').Split(' ');
-                        adjacentList.Add(new SortedSet<AdjacentVertex>());
-                        foreach (var value in values)
-                        {
-                            adjacentList[i].Add(new AdjacentVertex(int.Parse(value) - 1, 1));
+                            foreach (var value in values)
+                            {
+                                adjacentList[i].Add(new AdjacentVertex(int.Parse(value) - 1, 1));
+                            }
+                            i++;
                         }
-                        i++;
+                        _adjacentList = adjacentList.ToArray();
                     }
-                    _adjacentList = adjacentList.ToArray();
-                }
+                    break;
+                default:
+                    _adjacentList = new SortedSet<AdjacentVertex>[0];
+                    break;
             }
+
             IsDirected = CheckDirected();
         }
         public Graph(Graph graph)

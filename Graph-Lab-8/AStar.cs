@@ -25,12 +25,12 @@ namespace Graph_Lab_8
             while(open.Count > 0)
             {
                 Cell current = open.Dequeue();
+                visitedCells++;
                 if (current == endCell) { find = true;  break; }
 
                 closed.Add(current);
                 foreach (var neighbor in map.Neighbors(current).Where(c => !closed.Contains(c)))
-                {
-                    visitedCells++;
+                {                  
                     var newCost = costSoFar[current] + Math.Abs(map[neighbor] - map[current]) + 1;
                     if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) 
                     {

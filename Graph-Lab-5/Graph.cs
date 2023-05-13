@@ -98,6 +98,7 @@ namespace GraphLab
                     {
                         List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
                         string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
+                        AdjacentVertices = AdjacentVertices.Remove(AdjacentVertices.Length - 1);
                         int i = 0;
                         foreach (var line in AdjacentVertices.Split('\n'))
                         {

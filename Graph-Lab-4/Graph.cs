@@ -71,7 +71,7 @@ namespace GraphLab
                             int j = 0;
                             SortedSet<AdjacentVertex> adjacentVerticeSet = new SortedSet<AdjacentVertex>();
                             if (line == string.Empty) continue;
-                            foreach (var number in Regex.Replace(line,",",String.Empty).Trim('\r', ' ').Split(' '))
+                            foreach (var number in Regex.Replace(line, ",", String.Empty).Trim('\r', ' ').Split(' '))
                             {
                                 int weight = Int32.Parse(number);
                                 if (weight != 0)
@@ -80,7 +80,7 @@ namespace GraphLab
                                     _edgeCount++;
                                 }
                                 j++;
-                                
+
                             }
                             adjacentList.Add(adjacentVerticeSet);
                             i++;
@@ -93,6 +93,7 @@ namespace GraphLab
                     {
                         List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
                         string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
+                        AdjacentVertices = AdjacentVertices.Remove(AdjacentVertices.Length - 1);
                         int i = 0;
                         foreach (var line in AdjacentVertices.Split('\n'))
                         {
@@ -116,7 +117,7 @@ namespace GraphLab
                     _adjacentList = new SortedSet<AdjacentVertex>[0];
                     break;
             }
-           
+
             IsDirected = CheckDirected();
             _vetexComponents = new int[_adjacentList.Length];
         }
