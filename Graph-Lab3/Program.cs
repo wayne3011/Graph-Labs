@@ -2,6 +2,7 @@
 using System.Text;
 using GraphLab;
 using Graph_Lab3.Components.OutputModels;
+using Graph_Lab3;
 
 namespace GraphLab3
 {
@@ -54,10 +55,12 @@ namespace GraphLab3
                     graph = new Graph(args[1], InputFileType.AdjacencyMatrix);
                     break;
                 default:
+                    graph = new Graph();
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     break;
             }
-            BridgesAndHingesResult result = graph.BridgeAndHingesSearch();
+            
+            BridgesAndHingesResult result = BridgeAndHingesSearch.Run(graph);
             Console.WriteLine("Bridges:");
             Console.WriteLine(FormatEdgesArray(result.Bridges));
             Console.WriteLine("Cut vertices");
