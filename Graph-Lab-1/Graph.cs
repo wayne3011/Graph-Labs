@@ -1,12 +1,46 @@
-﻿using GraphLab.Components;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using GraphLab.Components;
+using System.Threading.Tasks;
 
 namespace GraphLab
-{ 
+{
     internal class Graph
     {
         private readonly SortedSet<AdjacentVertex>[] _adjacentList;
+        public SortedSet<AdjacentVertex>[] AdjacentList { get { return _adjacentList; } }
         public bool IsDirected { get; }
+        private int _edgeCount;
+        public int EdgeCount { get { return _edgeCount; } }
+        public int VertexCount { get { return _adjacentList.Length; } }
+        public Graph()
+        {
+            _adjacentList = new SortedSet<AdjacentVertex>[0];
+        }
+        Graph(int vertexCount)
+        {
+            IsDirected = false;
+            _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                _adjacentList[i] = new SortedSet<AdjacentVertex>();
+            }
+        }
+        public Graph(IEnumerable<SortedSet<AdjacentVertex>> vertices)
+        {
+            _adjacentList = new SortedSet<AdjacentVertex>[vertices.Count()];
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                _adjacentList[i] = new SortedSet<AdjacentVertex>();
+                foreach(var adjacentVertex in vertices.ElementAt(i))
+                {
+                    _adjacentList[i].Add(adjacentVertex);
+                }
+            }
+        }
         public Graph(string filePath, InputFileType fileType)
         {
 
@@ -60,6 +94,7 @@ namespace GraphLab
                                 if (weight != 0)
                                 {
                                     adjacentVerticeSet.Add(new AdjacentVertex(j, weight));
+                                    _edgeCount++;
                                 }
                                 j++;
 
@@ -75,8 +110,8 @@ namespace GraphLab
                     {
                         List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
                         string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
-                        int i = 0;
                         AdjacentVertices = AdjacentVertices.Remove(AdjacentVertices.Length - 1);
+                        int i = 0;
                         foreach (var line in AdjacentVertices.Split('\n'))
                         {
                             if (line == string.Empty)
@@ -102,6 +137,16 @@ namespace GraphLab
 
             IsDirected = CheckDirected();
         }
+        public Graph(Graph graph)
+        {
+            IsDirected = graph.IsDirected;
+            _adjacentList = new SortedSet<AdjacentVertex>[graph._adjacentList.Length];
+            _edgeCount = graph._edgeCount;
+            for (int i = 0; i < graph._adjacentList.Length; i++)
+            {
+                _adjacentList[i] = new SortedSet<AdjacentVertex>(graph._adjacentList[i]);
+            }
+        }
         /// <summary>
         /// Return the adjacency matrix of the Graph
         /// </summary>
@@ -121,35 +166,13 @@ namespace GraphLab
             }
             return matrix;
         }
-        /// <summary>
-        /// Return the adjacency matrix of the Graph
-        /// </summary>
-        /// <returns>Return the adjacency matrix, where is there no path, int.MaxValue is used</returns>
-        private int[][] GetAdjacencyMatrixForWarshall()
-        {
-            int[][] matrix = new int[_adjacentList.Length][];
-            for (int i = 0; i < _adjacentList.Length; i++)
-            {
-                matrix[i] = new int[_adjacentList.Length];
-                for (int j = 0; j < _adjacentList.Length; j++)
-                {
-                    if (i == j) matrix[i][j] = 0;
-                    else
-                    {
-                        AdjacentVertex vertex = _adjacentList[i].FirstOrDefault(v => v.Vj == j, new AdjacentVertex(j, int.MaxValue));
-                        matrix[i][j] = vertex.Weight;
-                    }
 
-                }
-            }
-            return matrix;
-        }
         /// <summary>
         /// Return the weight of Edge
         /// </summary>
         public int Weight(int vi, int vj)
         {
-            return _adjacentList[vi].FirstOrDefault(vertex => vertex.Vj == vj, new AdjacentVertex(0, 0)).Weight;
+            return _adjacentList[vi].FirstOrDefault(vertex => vertex.Vj == vj, new AdjacentVertex(0, int.MaxValue)).Weight;
         }
         /// <summary>
         /// Check for an edge
@@ -219,129 +242,12 @@ namespace GraphLab
             }
             return directed;
         }
-        /// <summary>
-        /// Returns the result of the Floyd Warshall algorithm as a distance matrix
-        /// </summary>
-        /// <returns></returns>
-        public int[][] FloydWarshallAlgorithm()
+        public void AddEdge(int vi, int vj, int weight)
         {
-            int[][] MatrixD = GetAdjacencyMatrixForWarshall();
-            for (int k = 0; k < _adjacentList.Length; k++)
-            {
-                for (int i = 0; i < _adjacentList.Length; i++)
-                {
-                    for (int j = 0; j < _adjacentList.Length; j++)
-                    {
-                        if (MatrixD[i][k] == int.MaxValue || MatrixD[k][j] == int.MaxValue) continue;
-                        MatrixD[i][j] = Math.Min(MatrixD[i][j], MatrixD[i][k] + MatrixD[k][j]);
-                    }
-                }
-            }
-            return MatrixD;
+            if (!_adjacentList[vi].Contains(new AdjacentVertex(vj, 0))) _edgeCount++;
+            _adjacentList[vi].Add(new AdjacentVertex(vj, weight));
+            if (!IsDirected) _adjacentList[vj].Add(new AdjacentVertex(vi, weight));
         }
-        /// <summary>
-        /// Returns the vector of degrees of the <see cref="Graph"/>
-        /// </summary>
-        /// <returns>
-        /// For undirected graph incoimng and outgoing vectors are equal
-        /// </returns>
-        public DegreeVector GetDegreeVector()
-        {
-            DegreeVector degreeVector = new DegreeVector(IsDirected, _adjacentList.Length);
-
-            for (int i = 0; i < _adjacentList.Length; i++)
-            {
-                degreeVector.SetOutgoingVectorDegree(i, _adjacentList[i].Count);
-            }
-            if (IsDirected)
-            {
-                for (int i = 0; i < _adjacentList.Length; i++)
-                {
-                    foreach (var outgoingVertex in _adjacentList[i])
-                    {
-                        degreeVector.GetIncomingVector()[outgoingVertex.Vj]++;
-                    }
-                }
-            }
-
-            return degreeVector;
-        }
-        /// <summary>
-        /// Return the eccenrisity vector of the <see cref="Graph"/>
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks >Note: This method uses Floyd Warshall's O(n^3) algorithm. If you already have a result from it, use the static method with the highest performance</remarks>
-        public int[] GetEccentricity()//??? Только связный граф?
-        {
-            int[][] floydWarshallMatrix = FloydWarshallAlgorithm();
-            int[] eccentricity = new int[floydWarshallMatrix.Length];
-            for (int i = 0; i < floydWarshallMatrix.Length; i++)
-            {
-                eccentricity[i] = floydWarshallMatrix[i].Max();
-            }
-            return eccentricity;
-        }
-        /// <summary>
-        /// Return the eccenrisity vector of the <see cref="Graph"/>
-        /// </summary>
-        /// <param name="FloydWarshallMatrix">The result of the Floyd Warshell algorithm</param>
-        /// <returns></returns>
-        static public int[] GetEccentricity(int[][] FloydWarshallMatrix)
-        {
-            int[] eccentricity = new int[FloydWarshallMatrix.Length];
-            for (int i = 0; i < FloydWarshallMatrix.Length; i++)
-            {
-                eccentricity[i] = FloydWarshallMatrix[i].Max();
-            }
-            return eccentricity;
-        }
-        /// <summary>
-        /// Gets the radius of the <see cref="Graph"/>
-        /// </summary>
-        /// <returns></returns>
-        public int GetRadius()
-        {
-            return GetEccentricity().Min();
-        }
-        /// <summary>
-        /// Gets the diameter of the <see cref="Graph"/>
-        /// </summary>
-        /// <returns></returns>
-        public int GetDiameter()
-        {
-            return GetEccentricity().Max();
-        }
-        /// <summary>
-        /// Gets the vector of the central vertices of the <see cref="Graph"/>
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetCentralVertices()
-        {
-            int[] eccentricity = GetEccentricity();
-            int radius = eccentricity.Min();
-            List<int> centralVertices = new List<int>();
-            for (int i = 0; i < eccentricity.Length; i++)
-            {
-                if (eccentricity[i] == radius) centralVertices.Add(i);
-            }
-            return centralVertices.ToArray();
-        }
-        /// <summary>
-        /// Gets the vector of the pheripheral vertices of the <see cref="Graph"/>
-        /// </summary>
-        /// <returns></returns>
-        public int[] GetPeripheralVertices()
-        {
-            int[] eccentricity = GetEccentricity();
-            List<int> peripheralVertices = new List<int>();
-            int diameter = eccentricity.Max();
-            for (int i = 0; i < eccentricity.Length; i++)
-            {
-                if (eccentricity[i] == diameter) peripheralVertices.Add(i);
-            }
-            return peripheralVertices.ToArray();
-        }
-        
     }
     enum InputFileType
     {
@@ -349,5 +255,4 @@ namespace GraphLab
         AdjacencyMatrix,
         AdjacencyList
     };
-
 }

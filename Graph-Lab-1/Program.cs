@@ -56,7 +56,8 @@ namespace GraphLab1
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     break;
             }
-            DegreeVector degreeVector = graph.GetDegreeVector();            
+            StaticsCollector staticsCollector = new StaticsCollector(graph);
+            DegreeVector degreeVector = staticsCollector.GetDegreeVector();            
             if (graph.IsDirected)
             {               
                 if(FileOutput)
@@ -81,7 +82,7 @@ namespace GraphLab1
                 Console.Write("deg = ");
                 Console.WriteLine(FormatOutputArray(degreeVector.GetOutgoingVector()));
             }
-            int[][] FloydWarshallMatrix = graph.FloydWarshallAlgorithm();
+            int[][] FloydWarshallMatrix = staticsCollector.FloydWarshallAlgorithm();
             if (FileOutput)
             {
                 stream.WriteLine("Distancies:");
@@ -92,21 +93,22 @@ namespace GraphLab1
             if (graph.IsDirected) {
                 return;
             }
+
             if (FileOutput)
             {
                 stream.WriteLine("Eccentricity:");
-                stream.WriteLine(FormatOutputArray(Graph.GetEccentricity(FloydWarshallMatrix)));
-                stream.WriteLine("D = {0}", graph.GetDiameter());
-                stream.WriteLine("R = {0}", graph.GetRadius());
-                stream.Write("Z = "); stream.WriteLine(FormatOutputArray(graph.GetCentralVertices()));
-                stream.Write("P = "); stream.WriteLine(FormatOutputArray(graph.GetPeripheralVertices()));
+                stream.WriteLine(FormatOutputArray(StaticsCollector.GetEccentricity(FloydWarshallMatrix)));
+                stream.WriteLine("D = {0}", staticsCollector.GetDiameter());
+                stream.WriteLine("R = {0}", staticsCollector.GetRadius());
+                stream.Write("Z = "); stream.WriteLine(FormatOutputArray(staticsCollector.GetCentralVertices()));
+                stream.Write("P = "); stream.WriteLine(FormatOutputArray(staticsCollector.GetPeripheralVertices()));
             }
             Console.WriteLine("Eccentricity:");
-            Console.WriteLine(FormatOutputArray(Graph.GetEccentricity(FloydWarshallMatrix)));
-            Console.WriteLine("D = {0}",graph.GetDiameter());
-            Console.WriteLine("R = {0}", graph.GetRadius());
-            int[] centralVertices = graph.GetCentralVertices();
-            int[] peripheralVertices = graph.GetPeripheralVertices();
+            Console.WriteLine(FormatOutputArray(StaticsCollector.GetEccentricity(FloydWarshallMatrix)));
+            Console.WriteLine("D = {0}", staticsCollector.GetDiameter());
+            Console.WriteLine("R = {0}", staticsCollector.GetRadius());
+            int[] centralVertices = staticsCollector.GetCentralVertices();
+            int[] peripheralVertices = staticsCollector.GetPeripheralVertices();
             for (int i = 0; i < centralVertices.Length; i++)
             {
                 centralVertices[i]++;
@@ -117,34 +119,6 @@ namespace GraphLab1
             }
             Console.Write("Z = "); Console.WriteLine(FormatOutputArray(centralVertices));
             Console.Write("P = "); Console.WriteLine(FormatOutputArray(peripheralVertices));
-        }
-        static void PrintMatrix(int[][] matrix)
-        {
-            for (int i = 0; i < matrix.Length; i++)
-            {
-                for (int  j = 0;  j < matrix[i].Length;  j++)
-                {
-                    if (matrix[i][j] == int.MaxValue) Console.Write("∞ ",Encoding.UTF8);
-                    else Console.Write(matrix[i][j] + " ");
-                }
-                Console.WriteLine();
-            }
-        }
-        static void PrintArray(object[] array)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                Console.Write(array[i] + " ");
-            }
-            Console.WriteLine();
-        }
-        static void PrintArray(int[] array)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                Console.Write(array[i] + " ");
-            }
-            Console.WriteLine();
         }
         static string FormatOutputArray(int[] array) 
         {
