@@ -5,6 +5,7 @@ using Graph_Lab3.Components.OutputModels;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Graph_Lab_4;
 
 namespace GraphLab3
 {
@@ -68,34 +69,35 @@ namespace GraphLab3
                     graph = new Graph(args[1], InputFileType.AdjacencyMatrix);
                     break;
                 default:
+                    graph = new Graph();
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     break;
             }
-            if (graph.IsDirected) graph = graph.CorrelatedGraph();
+            if (graph.IsDirected) graph = CorrelatedGraph(graph);
             int actionKeyIndex = args.Length == 5 ? 4 : 2;
             Edge[] spanningTree = new Edge[0];
             switch (args[actionKeyIndex])
             {
                 case "-k":
-                    spanningTree = graph.Kruscala();
+                    spanningTree = Kruscala.Run(graph);
                     break;
                 case "-p":
-                    spanningTree = graph.Prima();
+                    spanningTree = Prima.Run(graph);
                     break;
                 case "-b":
-                    spanningTree = graph.Boruvka().ToUndirectedTree();
+                    spanningTree = Boruvka.Run(graph).ToUndirectedTree();
                     break;
                 case "-s":
                     Stopwatch timer = Stopwatch.StartNew();
-                    spanningTree = graph.Kruscala();
+                    spanningTree = Kruscala.Run(graph);
                     timer.Stop();
                     multiWriter.WriteLine("Kruscala: " + timer.ElapsedMilliseconds);
                     timer.Restart();
-                    graph.Prima();
+                    Prima.Run(graph);
                     timer.Stop();
                     multiWriter.WriteLine("Prima: " + timer.ElapsedMilliseconds);
                     timer.Restart();
-                    graph.Boruvka();
+                    Boruvka.Run(graph).ToUndirectedTree();
                     timer.Stop();
                     multiWriter.WriteLine("Boruvka " + timer.ElapsedMilliseconds);
                     break;
@@ -141,6 +143,20 @@ namespace GraphLab3
             }
             result.AppendFormat("{0}]", array[array.Length - 1] + 1);
             return result.ToString();
+        }
+        static public Graph CorrelatedGraph(Graph graph)
+        {
+            Graph correlatedGraph = new Graph(graph);
+            if (!graph.IsDirected) return correlatedGraph;
+            for (int i = 0; i < graph.AdjacentList.Length; i++)
+            {
+                foreach (var adjacentVertex in graph.AdjacentList[i])
+                {
+                    correlatedGraph.AdjacentList[adjacentVertex.Vj].Add(new AdjacentVertex(i, adjacentVertex.Weight));
+                }
+
+            }
+            return correlatedGraph;
         }
 
     }
