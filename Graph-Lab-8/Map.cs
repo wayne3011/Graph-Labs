@@ -41,6 +41,7 @@ namespace Graph_Lab_8
             return neighnoirs.ToArray();
         }
         public int this[int i,int j] => cells[i][j];
+        public int this[Cell cell] => cells[cell.X][cell.Y];
 
     }
 }

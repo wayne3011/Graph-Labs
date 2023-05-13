@@ -10,7 +10,7 @@ namespace Graph_Lab_8
 {
     internal class AStar
     {
-        static public (Cell[],int) Run(Map map, Cell beginCell, Cell endCell, Func<Cell,Cell,int> h)
+        static public (Cell[],int,int) Run(Map map, Cell beginCell, Cell endCell, Func<Cell,Cell,int> h)
         {
             HashSet<Cell> closed = new HashSet<Cell>();
             PriorityQueue<Cell, int> open = new PriorityQueue<Cell, int>();
@@ -20,24 +20,20 @@ namespace Graph_Lab_8
             costSoFar[beginCell] = 0;
             estimatedCost[beginCell] = costSoFar[beginCell] + h(beginCell,endCell);
             open.Enqueue(beginCell, 0);
+            bool find = true;
+            int visitedCells = 0;
             while(open.Count > 0)
             {
                 Cell current = open.Dequeue();
-                if (current == endCell) break;
+                if (current == endCell) { find = true;  break; }
+
                 closed.Add(current);
-                if(current.X == 1 && current.Y == 9)
+                foreach (var neighbor in map.Neighbors(current).Where(c => !closed.Contains(c)))
                 {
-                    Console.WriteLine("EHFFF");
-                }
-                foreach (var neighbor in map.Neighbors(current))
-                {
-                    if (closed.Contains(neighbor)) continue;
-                    var newCost = costSoFar[current] + map[neighbor.X, neighbor.Y];
-                    if (!open.Contains(neighbor) || newCost < costSoFar[neighbor]) {
-                        if (neighbor.X < 2 && neighbor.Y >7)
-                        {
-                            Console.WriteLine("EHFFF");
-                        }
+                    visitedCells++;
+                    var newCost = costSoFar[current] + Math.Abs(map[neighbor] - map[current]) + 1;
+                    if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor]) 
+                    {
                         parents[neighbor] = current;
                         costSoFar[neighbor] = newCost;
                         estimatedCost[neighbor] = costSoFar[neighbor] + h(neighbor,endCell);
@@ -50,17 +46,20 @@ namespace Graph_Lab_8
                     }
                 }
             }
-            //if (open.Count == 0) throw new Exception("NO PATH!");
+            if (!find) throw new Exception("NO PATH!");
             Cell currentCell = endCell;
             List<Cell> path = new List<Cell>();
+            int weight = 0;
             while(currentCell != beginCell)
             {
                 path.Add(currentCell);
-                currentCell = parents[currentCell];
+                Cell parent = parents[currentCell];
+                weight += Math.Abs(map[currentCell] - map[parent]) + 1;
+                currentCell = parent;
             }
             path.Add(currentCell);
             path.Reverse();
-            return (path.ToArray(), costSoFar[endCell]);
+            return (path.ToArray(), weight, visitedCells);
         }
 
     }

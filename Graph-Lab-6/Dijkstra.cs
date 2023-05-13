@@ -30,8 +30,7 @@ namespace Graph_Lab_5
                 numberOfVertexVisits[currentVertex]++;
                 if (numberOfVertexVisits[currentVertex] == graph.AdjacentList.Length) throw new Exception("Negative cycle!");
                 foreach(var adjacentVertex in graph.AdjacentList[currentVertex])
-                {
-                    
+                {         
                     if(markers[adjacentVertex.Vj] > (markers[currentVertex] == int.MaxValue ? int.MaxValue : markers[currentVertex] + adjacentVertex.Weight))
                     {
                         if(visited[adjacentVertex.Vj]) visited[adjacentVertex.Vj] = false;
