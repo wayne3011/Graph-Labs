@@ -56,10 +56,11 @@ namespace GraphLab2
                     Console.WriteLine("Неверная комбинация ключей. Используйте -h для получения справки");
                     break;
             }
+            ConnectivityStatistics connectivityStatistics = new ConnectivityStatistics(graph);
             int[][] components; string ouputArrays;
             if (graph.IsDirected == false)
             {
-                components = graph.GetConnectivityСomponents();
+                components = connectivityStatistics.GetConnectivityСomponents();
                 if (components.Length == 1){
                     Console.WriteLine("Graph is connected.");
                     if(FileOutput) stream.WriteLine("Graph is connected.");
@@ -77,8 +78,9 @@ namespace GraphLab2
                 return;
             }
 
-            Graph correlatedGraph = graph.CorrelatedGraph();
-            components = correlatedGraph.GetConnectivityСomponents();
+            Graph correlatedGraph = CorrelatedGraph(graph);
+            ConnectivityStatistics connectivityStatisticsForCorrelatedGraph = new ConnectivityStatistics(correlatedGraph);
+            components = connectivityStatisticsForCorrelatedGraph.GetConnectivityСomponents();
             if (components.Length == 1)
             {
                 Console.WriteLine("Digraph is connected.");
@@ -95,7 +97,7 @@ namespace GraphLab2
             Console.WriteLine(ouputArrays);
             if (FileOutput) stream.WriteLine(ouputArrays);
 
-            components = graph.Kosarayu();
+            components = connectivityStatistics.Kosarayu();
             if (components.Length == 1)
             {
                 Console.WriteLine("Digraph is stronly connected.");
@@ -111,6 +113,20 @@ namespace GraphLab2
             ouputArrays = FormatTwoDimensionalArray(components);
             Console.WriteLine(ouputArrays);
             if (FileOutput) stream.WriteLine(ouputArrays);
+        }
+        static public Graph CorrelatedGraph(Graph graph)
+        {
+            Graph correlatedGraph = new Graph(graph);
+            if (!graph.IsDirected) return correlatedGraph;
+            for (int i = 0; i < graph.AdjacentList.Length; i++)
+            {
+                foreach (var adjacentVertex in graph.AdjacentList[i])
+                {
+                    correlatedGraph.AdjacentList[adjacentVertex.Vj].Add(new AdjacentVertex(i, adjacentVertex.Weight));
+                }
+
+            }
+            return correlatedGraph;
         }
         static string FormatTwoDimensionalArray(int[][] array)
         {
