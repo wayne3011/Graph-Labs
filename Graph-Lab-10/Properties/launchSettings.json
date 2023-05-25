@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Graph-Lab-10": {
+      "commandName": "Project",
+      "commandLineArgs": "-m C:\\Users\\user\\source\\repos\\Graph-Labs\\Graph-Lab-10\\task10\\matrix_t10_003.txt"
+    }
+  }
+}
