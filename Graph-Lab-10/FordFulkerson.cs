@@ -70,10 +70,6 @@ namespace Graph_Lab_10
                     int tmpDelta = DFS(adjacencyVertex.Vj, Math.Min(delta,Cvu - Fvu), mark);
                     if (tmpDelta > 0)
                     {
-                        //if (Cvu - tmpDelta <= 0) stream.DeleteEdge(adjacencyVertex.Vj, v);
-                        //else 
-                        //if (Cvu == Fvu + tmpDelta) graph.DeleteEdge(v, adjacencyVertex.Vj);
-                        //else 
                         stream.AddEdge(v, adjacencyVertex.Vj, Fvu + tmpDelta);
                         stream.AddEdge(adjacencyVertex.Vj, v, stream.Weight(adjacencyVertex.Vj,v) - tmpDelta);
                         return tmpDelta;

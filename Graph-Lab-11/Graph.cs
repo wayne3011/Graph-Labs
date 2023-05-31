@@ -10,7 +10,7 @@ namespace GraphLab
 {
     internal class Graph
     {
-        private readonly SortedSet<AdjacentVertex>[] _adjacentList;
+        private SortedSet<AdjacentVertex>[] _adjacentList;
         public SortedSet<AdjacentVertex>[] AdjacentList { get { return _adjacentList; } }
         public bool IsDirected { get; }
         private int _edgeCount;
@@ -19,26 +19,15 @@ namespace GraphLab
         public Graph()
         {
             _adjacentList = new SortedSet<AdjacentVertex>[0];
+            IsDirected = false;
         }
-        Graph(int vertexCount)
+        public Graph(int vertexCount)
         {
             IsDirected = false;
             _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
             for (int i = 0; i < _adjacentList.Length; i++)
             {
                 _adjacentList[i] = new SortedSet<AdjacentVertex>();
-            }
-        }
-        public Graph(IEnumerable<SortedSet<AdjacentVertex>> vertices)
-        {
-            _adjacentList = new SortedSet<AdjacentVertex>[vertices.Count()];
-            for (int i = 0; i < _adjacentList.Length; i++)
-            {
-                _adjacentList[i] = new SortedSet<AdjacentVertex>();
-                foreach(var adjacentVertex in vertices.ElementAt(i))
-                {
-                    _adjacentList[i].Add(adjacentVertex);
-                }
             }
         }
         public Graph(string filePath, InputFileType fileType)
@@ -110,8 +99,7 @@ namespace GraphLab
                     {
                         List<SortedSet<AdjacentVertex>> adjacentList = new List<SortedSet<AdjacentVertex>>();
                         string AdjacentVertices = reader.ReadToEnd() ?? string.Empty;
-                        AdjacentVertices = AdjacentVertices.Remove(AdjacentVertices.Length - 2);
-                        AdjacentVertices = Regex.Replace(AdjacentVertices, "\r", "");
+                        AdjacentVertices = AdjacentVertices.Remove(AdjacentVertices.Length - 1);
                         int i = 0;
                         foreach (var line in AdjacentVertices.Split('\n'))
                         {
@@ -167,7 +155,29 @@ namespace GraphLab
             }
             return matrix;
         }
+        /// <summary>
+        /// Return the adjacency matrix of the Graph
+        /// </summary>
+        /// <returns>Return the adjacency matrix, where is there no path, int.MaxValue is used</returns>
+        private int[][] GetAdjacencyMatrixForWarshall()
+        {
+            int[][] matrix = new int[_adjacentList.Length][];
+            for (int i = 0; i < _adjacentList.Length; i++)
+            {
+                matrix[i] = new int[_adjacentList.Length];
+                for (int j = 0; j < _adjacentList.Length; j++)
+                {
+                    if (i == j) matrix[i][j] = 0;
+                    else
+                    {
+                        AdjacentVertex vertex = _adjacentList[i].FirstOrDefault(v => v.Vj == j, new AdjacentVertex(j, int.MaxValue));
+                        matrix[i][j] = vertex.Weight;
+                    }
 
+                }
+            }
+            return matrix;
+        }
         /// <summary>
         /// Return the weight of Edge
         /// </summary>
@@ -246,8 +256,19 @@ namespace GraphLab
         public void AddEdge(int vi, int vj, int weight)
         {
             if (!_adjacentList[vi].Contains(new AdjacentVertex(vj, 0))) _edgeCount++;
+            else _adjacentList[vi].Remove(new AdjacentVertex(vj, 0));
             _adjacentList[vi].Add(new AdjacentVertex(vj, weight));
-            if (!IsDirected) _adjacentList[vj].Add(new AdjacentVertex(vi, weight));
+            //if (!IsDirected) _adjacentList[vj].Add(new AdjacentVertex(vi, weight));
+        }
+        public void DeleteEdge(int vi, int vj)
+        {
+                        _adjacentList[vi].Remove(new AdjacentVertex(vj, 0));
+        }
+        public int AddSource(int[] firstShare)
+        {
+            var list = AdjacentList.ToList();
+            list.Add(new SortedSet<AdjacentVertex>());
+            _adjacentList = list.ToArray();
         }
     }
     enum InputFileType

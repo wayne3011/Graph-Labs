@@ -2,7 +2,7 @@
   "profiles": {
     "Graph-Lab-10": {
       "commandName": "Project",
-      "commandLineArgs": "-m C:\\Users\\user\\source\\repos\\Graph-Labs\\Graph-Lab-10\\task10\\matrix_t10_003.txt"
+      "commandLineArgs": "-m C:\\Users\\Максим\\source\\repos\\Graph-lab-1\\Graph-Lab-1\\Test1\\list_of_adjacency_t1_015.txt"
     }
   }
 }
