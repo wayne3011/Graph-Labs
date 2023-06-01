@@ -17,7 +17,7 @@ namespace GraphLab
                 {
                     Console.WriteLine("{------------------------------------------------}");
                     Console.WriteLine("{                  ТЕОРИЯ ГРАФОВ                 }");
-                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 4             }");
+                    Console.WriteLine("{            ЛАБАРАТОРНАЯ РАБОТА № 10            }");
                     Console.WriteLine("{             АВТОР: ЕРМИЛОВ МАКСИМ              }");
                     Console.WriteLine("{              ГРУППА: М3О-225Бк-21              }");
                     Console.WriteLine("{  -e <path> - ввод графа со списка рёбер        }");

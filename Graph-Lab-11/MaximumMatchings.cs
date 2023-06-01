@@ -1,5 +1,6 @@
 ﻿using GraphLab;
 using GraphLab.Components;
+using Graph_Lab_10;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +21,32 @@ namespace Graph_Lab_11
         public Edge[] Run()
         {
             (int[] firstShare, int[] secondShare) = CheckBipartite();
-            Graph gr = new Graph()
+            Graph processedGraph = new Graph(graph.VertexCount);
+            foreach(var edge in graph.GetListOfEdges())
+            {
+                if (firstShare.Contains(edge.vi) && secondShare.Contains(edge.vj)) processedGraph.AddEdge(edge);
+                    
+            }
+            int s = processedGraph.AddVertex();
             for (int i = 0; i < firstShare.Length; i++)
             {
+                processedGraph.AddEdge(s, firstShare[i], 1);
+            }
+            int t = processedGraph.AddVertex();
+            for (int i = 0; i < secondShare.Length; i++)
+            {
+                processedGraph.AddEdge(secondShare[i], t, 1);
+            }
+            FordFulkerson ff = new FordFulkerson(processedGraph);
+            ff.Run();
+            List<Edge> matchings = new List<Edge>();
+            foreach(var edge in ff.GetStream())
+            {
+                if (edge.vi == s || edge.vj == t || edge.weight == 0) continue;
+                matchings.Add(edge);
                 
             }
+            return matchings.ToArray();
         }
         public (int[], int[]) CheckBipartite()
         {
@@ -56,10 +78,11 @@ namespace Graph_Lab_11
             {
                 foreach (var adjacentVertex in graph.AdjacentList[i])
                 {
-                    correlatedGraph.AdjacentList[adjacentVertex.Vj].Add(new AdjacentVertex(i, adjacentVertex.Weight));
+                    correlatedGraph.AdjacentList[adjacentVertex.Vj].Add(new AdjacentVertex(i, 1));
                 }
 
             }
+            correlatedGraph.CheckDirected();
             return correlatedGraph;
         }
     }

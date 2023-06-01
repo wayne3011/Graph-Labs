@@ -12,18 +12,19 @@ namespace GraphLab
     {
         private SortedSet<AdjacentVertex>[] _adjacentList;
         public SortedSet<AdjacentVertex>[] AdjacentList { get { return _adjacentList; } }
-        public bool IsDirected { get; }
+        public bool IsDirected { get { return _directed; } }
+        private bool _directed;
         private int _edgeCount;
         public int EdgeCount { get { return _edgeCount; } }
         public int VertexCount { get { return _adjacentList.Length; } }
         public Graph()
         {
             _adjacentList = new SortedSet<AdjacentVertex>[0];
-            IsDirected = false;
+            _directed = false;
         }
         public Graph(int vertexCount)
         {
-            IsDirected = false;
+            _directed = true;
             _adjacentList = new SortedSet<AdjacentVertex>[vertexCount];
             for (int i = 0; i < _adjacentList.Length; i++)
             {
@@ -124,11 +125,11 @@ namespace GraphLab
                     break;
             }
 
-            IsDirected = CheckDirected();
+            _directed = CheckDirected();
         }
         public Graph(Graph graph)
         {
-            IsDirected = graph.IsDirected;
+            _directed = graph.IsDirected;
             _adjacentList = new SortedSet<AdjacentVertex>[graph._adjacentList.Length];
             _edgeCount = graph._edgeCount;
             for (int i = 0; i < graph._adjacentList.Length; i++)
@@ -236,7 +237,7 @@ namespace GraphLab
             return listOfEdges.ToArray();
         }
         /// <returns>True if Graph is directed</returns>
-        private bool CheckDirected()
+        public bool CheckDirected()
         {
             bool directed = false;
             for (int i = 0; i < _adjacentList.Length; i++)
@@ -251,6 +252,7 @@ namespace GraphLab
                     if (directed) break;
                 }
             }
+            _directed = directed;
             return directed;
         }
         public void AddEdge(int vi, int vj, int weight)
@@ -260,15 +262,30 @@ namespace GraphLab
             _adjacentList[vi].Add(new AdjacentVertex(vj, weight));
             //if (!IsDirected) _adjacentList[vj].Add(new AdjacentVertex(vi, weight));
         }
+        public void AddEdge(Edge edge)
+        {
+            AddEdge(edge.vi, edge.vj, edge.weight);
+        }
         public void DeleteEdge(int vi, int vj)
         {
-                        _adjacentList[vi].Remove(new AdjacentVertex(vj, 0));
+             _adjacentList[vi].Remove(new AdjacentVertex(vj, 0));
         }
-        public int AddSource(int[] firstShare)
+        public int AddVertex(AdjacentVertex[] adjacentList)
         {
-            var list = AdjacentList.ToList();
-            list.Add(new SortedSet<AdjacentVertex>());
-            _adjacentList = list.ToArray();
+            var newVertex = new SortedSet<AdjacentVertex>();
+            for (int i = 0; i < adjacentList.Length; i++)
+            {
+                if (!(adjacentList[i].Vj < AdjacentList.Length)) throw new Exception("There is no vertex adjacent to this");
+                newVertex.Add(adjacentList[i]);
+            }
+            _adjacentList = (new List<SortedSet<AdjacentVertex>>(_adjacentList) { newVertex }).ToArray();
+            return _adjacentList.Length - 1;
+        }
+        public int AddVertex()
+        {
+            var newVertex = new SortedSet<AdjacentVertex>();
+            _adjacentList = (new List<SortedSet<AdjacentVertex>>(_adjacentList) { newVertex }).ToArray();
+            return _adjacentList.Length - 1;
         }
     }
     enum InputFileType
