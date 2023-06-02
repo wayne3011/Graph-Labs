@@ -70,19 +70,18 @@ namespace Graph_Lab_9
     {
         private Graph graph;
         private double alpha = 1;
-        private double beta = 3.5;
-        private double q;
-        private double p = 0.3;
+        private double beta = 3;
+        private Edge[] OptimalPath;
+        private int OptimalPathLength = int.MaxValue;
+        private double p = 0.2;
+    private double q = 10;
         private Pheromones pheromones;
-        private int beginVertex;
-        private int iterationCount = 100;
-        private List<Edge> result;
+        private int iterationCount = 1000;
         public AntSystem(Graph graph, int beginVertex)
         {
             this.graph = graph;
             pheromones = new Pheromones(graph.VertexCount);
-            result = new List<Edge>();
-            this.beginVertex = beginVertex;
+            OptimalPath = new Edge[graph.VertexCount];
         }
         public Edge[] Run()
         {
@@ -90,57 +89,45 @@ namespace Graph_Lab_9
             {
                 List<Ant> ants = new List<Ant>();
                 int optimalPath = int.MaxValue;
-                for (int i = 0; i < graph.VertexCount; i++)
+            Edge[] path = new Edge[0];
+                for (int i = graph.VertexCount - 1; i >= 0 ; i--)
                 {
-                    if (i == beginVertex) continue;
                     Ant ant = new Ant(i);
                     AntBypass(ant);
-                    if (ant.PathLength < optimalPath) optimalPath = ant.PathLength;
+                    if (ant.PathLength < optimalPath)
+                    {
+                        optimalPath = ant.PathLength;
+                        path = ant.Path.ToArray();
+                    }
+                    optimalPath = ant.PathLength;
                     ants.Add(ant);
                 }
-                foreach (var ant in ants)
-                {
-                    foreach (var edge in ant.Path)
-                    {
-                        if(edge.vi != edge.vj)pheromones[edge.vi, edge.vj] += (double)optimalPath / (double)ant.PathLength;
-                    }
-                }
-                pheromones.Evaporation(p);
-            }
-            //GettingResultDFS(beginVertex);
-            GettingResultDFS(beginVertex, new bool[graph.VertexCount]);
-            return result.ToArray();
-        }
-        public void GettingResultDFS(int prev, bool[] closed)
-        {
-            AdjacentVertex maxPheromonesVertex = new AdjacentVertex(0);
-            double maxPheromones = int.MinValue;
-            foreach (var vertex in graph.AdjacentList[prev])
-            {
-                if (pheromones[prev, vertex.Vj] > maxPheromones && !closed[vertex.Vj])
-                {
-                    maxPheromonesVertex = vertex;
-                    maxPheromones = pheromones[prev, vertex.Vj];
-                }
-            }
-            closed[maxPheromonesVertex.Vj] = true;
-            result.Add(new Edge(prev, maxPheromonesVertex.Vj, maxPheromonesVertex.Weight));
-            if (maxPheromonesVertex.Vj != beginVertex) GettingResultDFS(maxPheromonesVertex.Vj, closed);
-            else return;
-        }
-    //public void GettingResultDFS()
-    //{
 
-    ////SortedSet<KeyValuePair<double, Edge>> pheromonesSorted = new SortedSet<KeyValuePair<double, Edge>>();
-    //var pq = pheromones.PheromonePriority;
-    //    while(result.Count != (graph.VertexCount - 1) * 2)
-    //    {
-    //        result.Add(pq.Dequeue());
-    //    }
-    //}
+            if (optimalPath < OptimalPathLength)
+                {
+                    OptimalPath = path;
+                    OptimalPathLength = optimalPath;
+                }
+            //foreach (var edge in path)
+            //{
+            //    if (edge.vi != edge.vj) pheromones[edge.vi, edge.vj] += (double)10 / (double)this.OptimalPathLength;
+            //}
+            pheromones.Evaporation(p);            //foreach (var ant in ants)
+            //{
+            //    foreach (var edge in ant.Path)
+            //    {
+            //        if (edge.vi != edge.vj) pheromones[edge.vi, edge.vj] += (double)optimalPath / (double)ant.PathLength;
+            //    }
+            //}
+
+        }
+
+        return OptimalPath.ToArray();
+        }
+
     public void AntBypass(Ant ant)
         {
-            while (ant.CurrentNode != beginVertex)
+            do
             {
                 HashSet<KeyValuePair<double, AdjacentVertex>> AttractivenessEachVertexes = new HashSet<KeyValuePair<double, AdjacentVertex>>();
                 double TotalAttractiveness = 0;
@@ -165,6 +152,11 @@ namespace Graph_Lab_9
                     }
                     cumulativeProbability += nextVertex.Key / TotalAttractiveness;
                 }
+            } while (ant.Closed.Count != graph.VertexCount);
+            ant.Path.Add(new Edge(ant.Path.Last().vj,ant.StartVertex, graph.Weight(ant.Path.Last().vj, ant.StartVertex)));
+            foreach(var edge in ant.Path)
+            {
+                pheromones[edge.vi,edge.vj] += q / ant.PathLength;
             }
         }
 
@@ -172,6 +164,7 @@ namespace Graph_Lab_9
     internal class Ant
     {
         public int CurrentNode { get; set; }
+        public int StartVertex { get; set; }
         public List<Edge> Path { get; set; }
         public HashSet<int> Closed { get; set; }
         public int PathLength
@@ -186,11 +179,12 @@ namespace Graph_Lab_9
                 return length;
             }
         }
-        public Ant(int currentNode)
+        public Ant(int startVertex)
         {
-            this.CurrentNode = currentNode;
+            this.CurrentNode = startVertex;
+            this.StartVertex = startVertex;
             Path = new List<Edge>();
-            Closed = new HashSet<int>();
+            Closed = new HashSet<int>() { startVertex };
         }
-    }
+}
 
