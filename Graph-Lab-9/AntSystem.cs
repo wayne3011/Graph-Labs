@@ -70,59 +70,67 @@ namespace Graph_Lab_9
     {
         private Graph graph;
         private double alpha = 1;
-        private double beta = 3;
+        private double beta = 3.5;
         private Edge[] OptimalPath;
         private int OptimalPathLength = int.MaxValue;
         private double p = 0.2;
-    private double q = 10;
+        private double q = 15;
+        private int beginVertex;
         private Pheromones pheromones;
-        private int iterationCount = 1000;
+        private int iterationCount = 200;
+        private int EliteAntCount = 5;
         public AntSystem(Graph graph, int beginVertex)
         {
             this.graph = graph;
             pheromones = new Pheromones(graph.VertexCount);
             OptimalPath = new Edge[graph.VertexCount];
+            this.beginVertex = beginVertex;
         }
-        public Edge[] Run()
+        public (Edge[],int) Run()
         {
-            for (int iter = 0; iter < iterationCount; iter++)
-            {
-                List<Ant> ants = new List<Ant>();
-                int optimalPath = int.MaxValue;
+        for (int iter = 0; iter < iterationCount; iter++)
+        {
+            PriorityQueue<Ant,int> ants = new PriorityQueue<Ant, int>();
+            int optimalPath = int.MaxValue;
             Edge[] path = new Edge[0];
-                for (int i = graph.VertexCount - 1; i >= 0 ; i--)
+            for (int i = 0; i < graph.VertexCount; i++)
+            {
+                Ant ant = new Ant(i);
+                AntBypass(ant);
+                if (ant.PathLength < optimalPath)
                 {
-                    Ant ant = new Ant(i);
-                    AntBypass(ant);
-                    if (ant.PathLength < optimalPath)
-                    {
-                        optimalPath = ant.PathLength;
-                        path = ant.Path.ToArray();
-                    }
                     optimalPath = ant.PathLength;
-                    ants.Add(ant);
+                    path = ant.Path.ToArray();
                 }
-
+                optimalPath = ant.PathLength;
+                ants.Enqueue(ant,ant.PathLength);
+            }
             if (optimalPath < OptimalPathLength)
+            {
+                OptimalPath = path;
+                OptimalPathLength = optimalPath;
+            }
+            pheromones.Evaporation(p);
+            for (int i = 0; i < EliteAntCount; i++)
+            {
+                Ant ant = ants.Dequeue();
+                foreach (var edge in ant.Path)
                 {
-                    OptimalPath = path;
-                    OptimalPathLength = optimalPath;
+                    if (edge.vi != edge.vj) pheromones[edge.vi, edge.vj] += (double)q / (double)ant.PathLength;
                 }
-            //foreach (var edge in path)
-            //{
-            //    if (edge.vi != edge.vj) pheromones[edge.vi, edge.vj] += (double)10 / (double)this.OptimalPathLength;
-            //}
-            pheromones.Evaporation(p);            //foreach (var ant in ants)
-            //{
-            //    foreach (var edge in ant.Path)
-            //    {
-            //        if (edge.vi != edge.vj) pheromones[edge.vi, edge.vj] += (double)optimalPath / (double)ant.PathLength;
-            //    }
-            //}
+            }
 
-        }
+                //foreach (var ant in ants)
+                //{
+                //    foreach (var edge in ant.Path)
+                //    {
+                //        if (edge.vi != edge.vj) pheromones[edge.vi, edge.vj] += (double)optimalPath / (double)ant.PathLength;
+                //    }
+                //}
 
-        return OptimalPath.ToArray();
+            }
+
+        return (OptimalPath.ToArray(),OptimalPathLength);
         }
 
     public void AntBypass(Ant ant)
@@ -154,13 +162,13 @@ namespace Graph_Lab_9
                 }
             } while (ant.Closed.Count != graph.VertexCount);
             ant.Path.Add(new Edge(ant.Path.Last().vj,ant.StartVertex, graph.Weight(ant.Path.Last().vj, ant.StartVertex)));
-            foreach(var edge in ant.Path)
-            {
-                pheromones[edge.vi,edge.vj] += q / ant.PathLength;
-            }
-        }
-
+            //foreach (var edge in ant.Path)
+            //{
+            //    pheromones[edge.vi, edge.vj] += q / ant.PathLength;
+            //}
     }
+
+}
     internal class Ant
     {
         public int CurrentNode { get; set; }
