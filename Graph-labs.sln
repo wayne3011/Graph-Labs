@@ -23,7 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graph-Lab-10", "Graph-Lab-1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graph-Lab-11", "Graph-Lab-11\Graph-Lab-11.csproj", "{EF1DB086-9A7C-4645-92C5-62384A4CC7B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graph-Lab-9", "Graph-Lab-9\Graph-Lab-9.csproj", "{F7FA1485-4E33-4B98-AC9E-FCECB1A7D942}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graph-Lab-9", "Graph-Lab-9\Graph-Lab-9.csproj", "{F7FA1485-4E33-4B98-AC9E-FCECB1A7D942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graph-Lab-9-2", "Graph-Lab-9-2\Graph-Lab-9-2.csproj", "{D9B31636-E5E4-45F0-BDCF-0A7FE4B93434}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{F7FA1485-4E33-4B98-AC9E-FCECB1A7D942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7FA1485-4E33-4B98-AC9E-FCECB1A7D942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7FA1485-4E33-4B98-AC9E-FCECB1A7D942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9B31636-E5E4-45F0-BDCF-0A7FE4B93434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9B31636-E5E4-45F0-BDCF-0A7FE4B93434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9B31636-E5E4-45F0-BDCF-0A7FE4B93434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9B31636-E5E4-45F0-BDCF-0A7FE4B93434}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

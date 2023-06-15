@@ -24,23 +24,25 @@ namespace Graph_Lab_7
             Graph graphWithSource = new Graph(graph.AdjacentList.Append(sourceVertex));
             int[] functionH = BellmanFord.Run(graphWithSource, graph.AdjacentList.Length);
             Graph graphForDijkstra = new Graph(graph);
-            foreach(var edge in graph.GetListOfEdges())
+            Edge[] pathsDijkstra = new Edge[0];
+            foreach (var edge in graph.GetListOfEdges())
             {
                 if (functionH[edge.vi] != 0 || functionH[edge.vj] != 0)
                 {
                     negativeEdges = true;
                 }
-                graphForDijkstra.AddEdge(edge.vi,edge.vj, edge.weight + functionH[edge.vi] - functionH[edge.vj]);
+                graphForDijkstra.AddEdge(edge.vi, edge.vj, edge.weight + functionH[edge.vi] - functionH[edge.vj]);
             }
             for (int i = 0; i < graph.AdjacentList.Length; i++)
             {
-                Edge[] pathsDijkstra =  Dijkstra.Run(graphForDijkstra, i);
+                pathsDijkstra =  Dijkstra.Run(graphForDijkstra, i);
                 for(int j = 0; j < pathsDijkstra.Length;j++)
                 {
                     Edge newEdge = new Edge(pathsDijkstra[j].vi, pathsDijkstra[j].vj, pathsDijkstra[j].weight);
                     if (newEdge.vi != newEdge.vj && newEdge.weight != int.MaxValue) paths.Add(newEdge);
                 }
             }
+            paths.ForEach((e)  => { e = new Edge(e.vi,e.vj, e.weight + functionH[e.vj] - functionH[e.vi]); });
             return paths.ToArray();
         }
     }

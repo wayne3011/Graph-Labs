@@ -162,10 +162,6 @@ namespace Graph_Lab_9
                 }
             } while (ant.Closed.Count != graph.VertexCount);
             ant.Path.Add(new Edge(ant.Path.Last().vj,ant.StartVertex, graph.Weight(ant.Path.Last().vj, ant.StartVertex)));
-            //foreach (var edge in ant.Path)
-            //{
-            //    pheromones[edge.vi, edge.vj] += q / ant.PathLength;
-            //}
     }
 
 }

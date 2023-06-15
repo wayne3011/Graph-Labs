@@ -267,7 +267,6 @@ namespace GraphLab
         public void AddEdge(int vi, int vj, int weight)
         {
             if (!_adjacentList[vi].Contains(new AdjacentVertex(vj, 0))) _edgeCount++;
-            _adjacentList[vi].Remove(new AdjacentVertex(vj, weight));
             _adjacentList[vi].Add(new AdjacentVertex(vj, weight));
             if (!IsDirected) _adjacentList[vj].Add(new AdjacentVertex(vi, weight));
         }
