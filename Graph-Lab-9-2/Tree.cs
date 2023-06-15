@@ -9,9 +9,12 @@ namespace Graph_Lab_9_2
 {
     public class TreeNode
     {
-        List<TreeNode> children { get; set; } = new List<TreeNode>();
+        public TreeNode? SelectOption;
+        public TreeNode? NoSelectOption;
+        public Edge CurrentEdge { get; set; }
+        public bool select;
+        internal Matrix CurrentAdjacecnyMatrix;
         public int phi { get; set; }
-        Dictionary<Edge, bool> options { get; set; } = new Dictionary<Edge, bool>();
         public TreeNode()
         {
 

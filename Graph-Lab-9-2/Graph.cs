@@ -170,7 +170,7 @@ namespace GraphLab
         /// Return the adjacency matrix of the Graph
         /// </summary>
         /// <returns>Return the adjacency matrix, where is there no path, int.MaxValue is used</returns>
-        private int[][] GetAdjacencyMatrixForWarshall()
+        public int[][] GetAdjacencyMatrixForWarshall()
         {
             int[][] matrix = new int[_adjacentList.Length][];
             for (int i = 0; i < _adjacentList.Length; i++)
@@ -178,7 +178,7 @@ namespace GraphLab
                 matrix[i] = new int[_adjacentList.Length];
                 for (int j = 0; j < _adjacentList.Length; j++)
                 {
-                    if (i == j) matrix[i][j] = 0;
+                    if (i == j) matrix[i][j] = int.MaxValue;
                     else
                     {
                         AdjacentVertex vertex = _adjacentList[i].FirstOrDefault(v => v.Vj == j, new AdjacentVertex(j, int.MaxValue));

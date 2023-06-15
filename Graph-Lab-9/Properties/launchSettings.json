@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Graph-Lab-9": {
+      "commandName": "Project",
+      "commandLineArgs": "-m \""
+    }
+  }
+}

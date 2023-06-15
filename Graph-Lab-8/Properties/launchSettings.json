@@ -2,7 +2,7 @@
   "profiles": {
     "Graph-Lab-8": {
       "commandName": "Project",
-      "commandLineArgs": "-m C:\\Users\\user\\source\\repos\\Graph-Labs\\Graph-Lab-8\\task8\\map_002.txt -n 9 0 -d 3 9"
+      "commandLineArgs": "-m C:\\Users\\user\\source\\repos\\Graph-Labs\\Graph-Lab-8\\task8\\map_003.txt -n 14 2 -d 0 9"
     }
   }
 }
