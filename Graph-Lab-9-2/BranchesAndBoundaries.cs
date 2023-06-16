@@ -30,21 +30,21 @@ namespace Graph_Lab_9_2
             TreeNode ParentNode = solutionsTree.root;
             while (true)
             {
-                Console.WriteLine("Processing: " + (ParentNode.select ? "no" : "") + ParentNode.CurrentEdge);
-                ParentNode.CurrentAdjacecnyMatrix.PrintMatrix();
-                Console.WriteLine();
+                //Console.WriteLine("Processing: " + (ParentNode.select ? "no" : "") + ParentNode.CurrentEdge);
+                //ParentNode.CurrentAdjacecnyMatrix.PrintMatrix();
+               // Console.WriteLine();
                 Edge option = ParentNode.CurrentAdjacecnyMatrix.ZerosMinimum().Max()!;
 
-                Console.WriteLine("Get From zeros: " + option);
+              //  Console.WriteLine("Get From zeros: " + option);
                 //select option
                 TreeNode SelectedOption = new TreeNode();
                 SelectedOption.CurrentAdjacecnyMatrix = ParentNode.CurrentAdjacecnyMatrix.SelectOption(option);
-                Console.WriteLine("Select option and remove column and rows: ");
-                SelectedOption.CurrentAdjacecnyMatrix.PrintMatrix();
+               // Console.WriteLine("Select option and remove column and rows: ");
+                //SelectedOption.CurrentAdjacecnyMatrix.PrintMatrix();
                 SelectedOption.phi = ParentNode.phi == int.MaxValue ? int.MaxValue : ParentNode.phi + SelectedOption.CurrentAdjacecnyMatrix.RowReduce() + SelectedOption.CurrentAdjacecnyMatrix.ColumnReduce();
-                Console.WriteLine("Reduced Matrix:");
-                SelectedOption.CurrentAdjacecnyMatrix.PrintMatrix();
-                Console.WriteLine("If take option: " + option + " = " + SelectedOption.phi);
+                //Console.WriteLine("Reduced Matrix:");
+                //SelectedOption.CurrentAdjacecnyMatrix.PrintMatrix();
+                //Console.WriteLine("If take option: " + option + " = " + SelectedOption.phi);
                 SelectedOption.select = true;
                 SelectedOption.CurrentEdge = option;
                 ParentNode.SelectOption = SelectedOption;
@@ -55,23 +55,21 @@ namespace Graph_Lab_9_2
                     List<Edge> edges = GetResult();
                
                     edges.Add(SelectedOption.CurrentAdjacecnyMatrix.GetLastEdge());
-                    if ( CheckCycle(edges)) return edges.ToArray();
+                    if (minimalPhi <= notBranched.Peek().phi) return edges.ToArray();
                     goto skip;
-
                 }
                 notBranched.Enqueue(SelectedOption, SelectedOption.phi);
                 //dont select option
                 TreeNode NotSelectedOption = new TreeNode();
                 NotSelectedOption.CurrentAdjacecnyMatrix = ParentNode.CurrentAdjacecnyMatrix;
                 NotSelectedOption.phi = ParentNode.phi == int.MaxValue || option.weight == int.MaxValue ? int.MaxValue : ParentNode.phi + option.weight;
-                Console.WriteLine("If didnt take option: " + option + " = " + NotSelectedOption.phi);
+               // Console.WriteLine("If didnt take option: " + option + " = " + NotSelectedOption.phi);
                 NotSelectedOption.select = false;
                 NotSelectedOption.CurrentEdge = option;
                 ParentNode.NoSelectOption = NotSelectedOption;
                 notBranched.Enqueue(NotSelectedOption, NotSelectedOption.phi);
                 skip:
                 TreeNode minimumPhi = notBranched.Dequeue();
-
                 if (minimumPhi.select) ParentNode = minimumPhi;
                 else
                 {
@@ -95,12 +93,7 @@ namespace Graph_Lab_9_2
             Edge currentElement = path[0];
             while (path.Count != 1)
             {
-                if (currentElement.vi == 0 && currentElement.vj == 6)
-                {
-                    Console.WriteLine();
-                }
                 path.Remove(currentElement);
-                //processedPath.Add(new Edge(currentElement.vi, currentElement.vj, graph.Weight(currentElement.vi, currentElement.vj)));
                 currentElement = path.FirstOrDefault(el => el.vi == currentElement.vj || el.vj == currentElement.vj, new Edge(0, 0, 0));
                 if (currentElement.vi == 0 && currentElement.vj == 0 && currentElement.weight == 0) return false;
             }

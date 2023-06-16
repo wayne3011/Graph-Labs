@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Graph-Lab-9-2": {
+      "commandName": "Project",
+      "commandLineArgs": "-m C:\\Users\\Максим\\source\\repos\\Graph-lab-1\\Graph-Lab-9-2\\task9\\matrix_t9_001.txt"
+    }
+  }
+}
