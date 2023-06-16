@@ -119,7 +119,7 @@ namespace Graph_Lab_9_2
                 int length = row.Value.Length;
                 foreach (var i in _columnNumbers)
                 {
-                    if (row.Value[_columnNumbers.IndexOf(i)] == 0) edges.Add(new Edge(row.Key, i, GetMinFromRow(row.Key,i) + GetMinFromColumn(i,row.Key)));
+                    if (row.Value[_columnNumbers.IndexOf(i)] == 0) edges.Add(new Edge(row.Key, i, GetMinFromRow(row.Key,i) + GetMinFromColumn(i,row.Key) < 0 ? int.MaxValue : GetMinFromRow(row.Key, i) + GetMinFromColumn(i, row.Key)));
                 }
             }
             return edges.ToArray();
